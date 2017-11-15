@@ -6,9 +6,9 @@
    - HardlyCommon
      - Add the HardlyCommon project (the one you just cloned) to your solution.
      - Add a project reference HardlyCommon
-   - For every other yellow icon in references, in NuGet:
-     - Uninstall and reinstall each.
-       - Under options, you may need to check 'force' for uninstall to work.
+   - For every other yellow icon in references:
+     - Open menu Tools -> NuGet Package Manager
+     - Run ```Update-Package -reinstall```
  - Hit play.
    - It'll fail, but create a template for the settings file.
 
