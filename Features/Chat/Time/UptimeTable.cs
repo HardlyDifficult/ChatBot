@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `StreamEndtimeInTicks` INTEGER NOT NULL, 
   `TimeStreamedInTicks` INTEGER NOT NULL, 
   PRIMARY KEY(`StreamEndtimeInTicks`) );

@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `Command` TEXT NOT NULL, 
   `Alias` TEXT NOT NULL, 
   PRIMARY KEY(`Alias`) );

@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `UserId` TEXT NOT NULL, 
   `Message` TEXT NOT NULL, 
   PRIMARY KEY(`UserId`) );

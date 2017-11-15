@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `Key` TEXT NOT NULL, 
   `LastSentInTicks` INTEGER, 
   `CooldownInSeconds` INTEGER NOT NULL DEFAULT 200, 

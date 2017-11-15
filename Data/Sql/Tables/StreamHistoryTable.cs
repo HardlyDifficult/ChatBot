@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `TimeInTicks` INTEGER NOT NULL, 
   `State` INTEGER NOT NULL );
           ";

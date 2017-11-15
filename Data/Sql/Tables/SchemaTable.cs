@@ -32,7 +32,7 @@ namespace HD
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` (
+CREATE TABLE IF NOT EXISTS `{tableName}` (
   `{tableField}` TEXT NOT NULL PRIMARY KEY,
 	`{versionField}`	INTEGER NOT NULL
 );

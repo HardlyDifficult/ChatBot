@@ -25,7 +25,7 @@
       {
         case 0:
           return $@"
-CREATE TABLE `{tableName}` ( 
+CREATE TABLE IF NOT EXISTS `{tableName}` ( 
   `UserId` TEXT NOT NULL, 
   `HasAutoFollowed` INTEGER, 
   `UserName` TEXT NOT NULL, 
