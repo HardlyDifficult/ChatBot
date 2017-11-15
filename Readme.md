@@ -12,6 +12,20 @@
  - Hit play.
    - It'll fail, but create a template for the settings file.
 
+## Sync your forked repository
+
+**Do this frequently if you are making changes**
+
+ - Change directory to your local repository.
+ - Switch to master branch if you are not ```git checkout master```
+ - Add the parent as a remote repository, ```git remote add upstream https://github.com/hardlydifficult/ChatBot.git```
+ - Issue ```git fetch upstream```
+ - Issue ```git rebase upstream/master```
+ - Check for pending merges with ```git status```
+ - Issue ```git push origin master```
+ 
+https://stackoverflow.com/a/31836086
+
 # How-to Use the Bot
 
  - Update ChatBot\bin\Settings.json
