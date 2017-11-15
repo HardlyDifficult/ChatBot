@@ -19,10 +19,10 @@ namespace HD
 
     static BotSettings instance;
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(twitch))]
     readonly TwitchSettings _twitch = new TwitchSettings();
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(twitter))]
     readonly TwitterSettings _twitter = new TwitterSettings();
     #endregion
 

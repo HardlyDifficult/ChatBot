@@ -8,19 +8,19 @@ namespace HD
   public class TwitchSettings
   {
     #region Data
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(channelUsername))] 
     string _channelUsername;
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(clientId))]
     string _clientId;
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(channelOauth))]
     string _channelOauth;
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(botUsername))]
     string _botUsername;
 
-    [JsonProperty]
+    [JsonProperty(PropertyName = nameof(botOauth))]
     string _botOauth;
     #endregion
 

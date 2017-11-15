@@ -11,5 +11,15 @@
        - Under options, you may need to check 'force' for uninstall to work.
  - Hit play.
    - It'll fail, but create a template for the settings file.
+
+# How-to Use the Bot
+
  - Update ChatBot\bin\Settings.json
     - You can leave Twitter values null
+
+
+## Overlay
+
+ - There are a couple files created by the bot you may use in OBS:
+   - TODO.txt (currently your stream title)
+   - Keystrokes.txt (holds the most recent keyboard combinations like "ctrl+s")

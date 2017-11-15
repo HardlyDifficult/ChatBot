@@ -11,16 +11,16 @@ namespace HD
   public class TwitterSettings
   {
     #region Data
-    [JsonProperty]
+    [JsonProperty (PropertyName = nameof(consumerKey))]
     string _consumerKey;
 
-    [JsonProperty]
+    [JsonProperty (PropertyName = nameof(consumerSecret))]
     string _consumerSecret;
 
-    [JsonProperty]
+    [JsonProperty (PropertyName = nameof(accessToken))]
     string _accessToken;
 
-    [JsonProperty]
+    [JsonProperty (PropertyName = nameof(accessTokenSecret))]
     string _accessTokenSecret;
     #endregion
 

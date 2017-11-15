@@ -95,13 +95,13 @@
     <Compile Include="Backend\Sql\SQLiteDataReaderExtensions.cs" />
     <Compile Include="Backend\Sql\SqlManager.cs" />
     <Compile Include="Features\Chat\Commands\SqlTwitchCommand.cs" />
-    <Compile Include="Data\Sql\Tables\CommandAliasesTable.cs" />
-    <Compile Include="Data\Sql\Tables\CommandsTable.cs" />
+    <Compile Include="Features\Chat\Commands\CommandAliasesTable.cs" />
+    <Compile Include="Features\Chat\Commands\CommandsTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyIntValueTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyStringValueTable.cs" />
     <Compile Include="Data\Sql\Tables\SchemaTable.cs" />
-    <Compile Include="Data\Sql\Tables\ShoutoutsTable.cs" />
-    <Compile Include="Data\Sql\Tables\StreamHistoryTable.cs" />
+    <Compile Include="Features\Chat\Shoutouts\ShoutoutsTable.cs" />
+    <Compile Include="Features\Chat\Time\StreamHistoryTable.cs" />
     <Compile Include="Data\Sql\Tables\SubsTable.cs" />
     <Compile Include="Data\Sql\Tables\UsersTable.cs" />
     <Compile Include="Data\Sql\Shared\TwitchUser.cs" />

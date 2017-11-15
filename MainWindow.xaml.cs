@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel;
 
@@ -103,7 +101,7 @@ namespace HD
       object sender,
       RoutedEventArgs e)
     {
-      Title.Text = BotLogic.streamTitle;
+      BotLogic.streamTitle = Title.Text = BotLogic.streamTitle; // I'm not crazy, promise ;)
     }
 
     void Title_LostFocus(
