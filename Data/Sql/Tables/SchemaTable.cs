@@ -4,13 +4,13 @@ using System.Data.SQLite;
 
 namespace HD
 {
-  public class SchemaTable : ISqlTableMigrator
+  public class SchemaTable : ITableMigrator
   {
     const string _tableName = "Schema";
     const string tableField = "TableName";
     const string versionField = "Version";
 
-    long ISqlTableMigrator.currentVersion
+    long ITableMigrator.currentVersion
     {
       get
       {
@@ -25,7 +25,7 @@ namespace HD
       }
     }
 
-    string ISqlTableMigrator.UpgradeTo(
+    string ITableMigrator.UpgradeTo(
       long version)
     {
       switch (version)
@@ -44,12 +44,12 @@ CREATE TABLE `{tableName}` (
 
     public static void UpdateTables()
     {
-      List<ISqlTableMigrator> tableMigratorList = ReflectionHelpers.CreateOneOfEach<ISqlTableMigrator>();
+      List<ITableMigrator> tableMigratorList = ReflectionHelpers.CreateOneOfEach<ITableMigrator>();
       tableMigratorList.Insert(0, new SchemaTable()); // This effectively adds the schema table twice, but ensures it's first
 
       for (int i = 0; i < tableMigratorList.Count; i++)
       {
-        ISqlTableMigrator tableMigrator = tableMigratorList[i];
+        ITableMigrator tableMigrator = tableMigratorList[i];
         string tableName = tableMigrator.tableName;
         long targetVersion = tableMigrator.currentVersion;
         long currentDbVersion = GetCurrentDbVersion(tableName);
@@ -89,7 +89,7 @@ REPLACE INTO {SchemaTable._tableName} ({tableField}, {versionField}) VALUES(@tab
     }
 
     static void UpgradeTable(
-      ISqlTableMigrator table,
+      ITableMigrator table,
       long currentDbVersion,
       long targetVersion)
     {

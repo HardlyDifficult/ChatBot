@@ -9,8 +9,12 @@ using System.Threading.Tasks;
 
 namespace HD
 {
+  /// <summary>
+  /// This saves and loads the Settings.json file.
+  /// </summary>
   public class BotSettings
   {
+    #region Data
     const string settingsFilename = "../Settings.json";
 
     static BotSettings instance;
@@ -20,7 +24,9 @@ namespace HD
 
     [JsonProperty]
     readonly TwitterSettings _twitter = new TwitterSettings();
+    #endregion
 
+    #region Properties
     public static TwitchSettings twitch
     {
       get
@@ -44,7 +50,17 @@ namespace HD
         return instance._twitter;
       }
     }
+    #endregion
 
+    #region Public Write
+    public static void Save()
+    {
+      string json = JsonConvert.SerializeObject(instance, Formatting.Indented);
+      File.WriteAllText(settingsFilename, json);
+    }
+    #endregion
+
+    #region Private Read
     static void Load()
     {
       Debug.Assert(instance == null);
@@ -62,11 +78,6 @@ namespace HD
         Save();
       }
     }
-
-    public static void Save()
-    {
-      string json = JsonConvert.SerializeObject(instance);
-      File.WriteAllText(settingsFilename, json);
-    }
+    #endregion
   }
 }

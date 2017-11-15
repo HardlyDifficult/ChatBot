@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace HD
 {
+  [JsonObject(MemberSerialization.OptIn)]
   public class TwitchSettings
   {
     #region Data
@@ -50,6 +51,9 @@ namespace HD
       }
     }
 
+    /// <summary>
+    /// TODO document scope required
+    /// </summary>
     public string channelOauth
     {
       get
@@ -76,6 +80,9 @@ namespace HD
       }
     }
 
+    /// <summary>
+    /// TODO document scope required
+    /// </summary>
     public string botOauth
     {
       get
@@ -88,7 +95,6 @@ namespace HD
         BotSettings.Save();
       }
     }
-
     #endregion
   }
 }

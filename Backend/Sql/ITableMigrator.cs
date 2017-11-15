@@ -1,6 +1,6 @@
 ﻿namespace HD
 {
-  public interface ISqlTableMigrator
+  public interface ITableMigrator
   {
     string tableName
     {

@@ -1,8 +1,8 @@
 ﻿namespace HD
 {
-  public class UsersTable : ISqlTableMigrator
+  public class UsersTable : ITableMigrator
   {
-    long ISqlTableMigrator.currentVersion
+    long ITableMigrator.currentVersion
     {
       get
       {
@@ -18,7 +18,7 @@
       }
     }
 
-    string ISqlTableMigrator.UpgradeTo(
+    string ITableMigrator.UpgradeTo(
       long version)
     {
       switch (version)

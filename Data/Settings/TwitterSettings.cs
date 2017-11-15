@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace HD
 {
+  /// <summary>
+  /// This is optional
+  /// </summary>
+  [JsonObject(MemberSerialization.OptIn)]
   public class TwitterSettings
   {
     #region Data

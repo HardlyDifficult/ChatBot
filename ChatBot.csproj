@@ -86,16 +86,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BotLogic.cs" />
-    <Compile Include="Category.cs" />
-    <Compile Include="CreateOrUpdateResult.cs" />
+    <Compile Include="Systems\BotLogic.cs" />
+    <Compile Include="Backend\Sql\CreateOrUpdateResult.cs" />
     <Compile Include="Data\Settings\BotSettings.cs" />
     <Compile Include="Data\Settings\TwitchSettings.cs" />
     <Compile Include="Data\Settings\TwitterSettings.cs" />
-    <Compile Include="Data\Sql\ISqlTableMigrator.cs" />
-    <Compile Include="Data\Sql\SQLiteDataReaderExtensions.cs" />
-    <Compile Include="Data\Sql\SqlManager.cs" />
-    <Compile Include="Data\Sql\SqlTwitchCommand.cs" />
+    <Compile Include="Backend\Sql\ITableMigrator.cs" />
+    <Compile Include="Backend\Sql\SQLiteDataReaderExtensions.cs" />
+    <Compile Include="Backend\Sql\SqlManager.cs" />
+    <Compile Include="Features\Chat\Commands\SqlTwitchCommand.cs" />
     <Compile Include="Data\Sql\Tables\CommandAliasesTable.cs" />
     <Compile Include="Data\Sql\Tables\CommandsTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyIntValueTable.cs" />
@@ -105,18 +104,18 @@
     <Compile Include="Data\Sql\Tables\StreamHistoryTable.cs" />
     <Compile Include="Data\Sql\Tables\SubsTable.cs" />
     <Compile Include="Data\Sql\Tables\UsersTable.cs" />
-    <Compile Include="Data\Sql\TwitchUser.cs" />
-    <Compile Include="Features\Edu.cs" />
-    <Compile Include="Features\Time\ETA.cs" />
-    <Compile Include="Features\Time\UptimeTable.cs" />
-    <Compile Include="Overlay\KeyPressMonitor.cs" />
-    <Compile Include="Overlay\KeystrokeInfo.cs" />
-    <Compile Include="Throttle.cs" />
-    <Compile Include="TwitchController.cs" />
-    <Compile Include="Twitch\TwitchConnection.cs" />
-    <Compile Include="Twitch\TwitchFollows.cs" />
-    <Compile Include="TwitterController.cs" />
-    <Compile Include="UserLevel.cs" />
+    <Compile Include="Data\Sql\Shared\TwitchUser.cs" />
+    <Compile Include="Features\Chat\Edu.cs" />
+    <Compile Include="Features\Chat\Time\ETA.cs" />
+    <Compile Include="Features\Chat\Time\UptimeTable.cs" />
+    <Compile Include="Features\Overlay\KeyPressMonitor.cs" />
+    <Compile Include="Features\Overlay\KeystrokeInfo.cs" />
+    <Compile Include="Backend\Throttle.cs" />
+    <Compile Include="Systems\Twitch\TwitchController.cs" />
+    <Compile Include="Systems\Twitch\TwitchConnection.cs" />
+    <Compile Include="Systems\Twitch\TwitchFollows.cs" />
+    <Compile Include="Systems\Twitter\TwitterController.cs" />
+    <Compile Include="Backend\UserLevel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -125,15 +124,14 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DynamicCommand.cs" />
+    <Compile Include="Features\Chat\Commands\DynamicCommand.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Message.cs" />
-    <Compile Include="Project.cs" />
+    <Compile Include="Features\Chat\Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +164,7 @@
       <Name>HardlyCommon</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
