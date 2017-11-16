@@ -34,7 +34,6 @@ namespace HD
       set
       {
         _channelUsername = value;
-        BotSettings.Save();
       }
     }
 
@@ -47,7 +46,6 @@ namespace HD
       set
       {
         _clientId = value;
-        BotSettings.Save();
       }
     }
 
@@ -63,7 +61,6 @@ namespace HD
       set
       {
         _channelOauth = value;
-        BotSettings.Save();
       }
     }
 
@@ -76,7 +73,6 @@ namespace HD
       set
       {
         _botUsername = value;
-        BotSettings.Save();
       }
     }
 
@@ -92,7 +88,6 @@ namespace HD
       set
       {
         _botOauth = value;
-        BotSettings.Save();
       }
     }
     #endregion

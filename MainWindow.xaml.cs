@@ -21,7 +21,24 @@ namespace HD
       object sender,
       RoutedEventArgs e)
     {
+      CheckBotSettings();
       TwitchController.Start();
+    }
+
+    private void CheckBotSettings()
+    {
+      Hide();
+      if (BotSettings.IsConfigured == false)
+      {
+        MessageBox.Show("Your twitch settings are not configured properly. Please setup.", 
+          "ChatBot",
+          MessageBoxButton.OK,
+          MessageBoxImage.Exclamation);
+
+        if (new SettingsWindow().ShowDialog() == false)
+          Environment.Exit(0);
+      }
+      Show();
     }
 
     void Window_Closing(
@@ -109,6 +126,12 @@ namespace HD
       RoutedEventArgs e)
     {
       BotLogic.streamTitle = Title.Text;
+    }
+
+    private void OpenSettings_OnClick(object sender, RoutedEventArgs e)
+    {
+      if (new SettingsWindow().ShowDialog() == false)
+        Environment.Exit(0);
     }
   }
 }
