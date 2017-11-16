@@ -47,22 +47,6 @@ namespace HD
     //  command.ExecuteNonQuery();
     //}
 
-    public static bool CreateAlias(
-      string command,
-      string alias)
-    {
-      SqlTwitchCommand twitchCommand = GetCommand(command);
-      if (twitchCommand.command == null)
-      {
-        return false;
-      }
-
-      SQLiteCommand sql = new SQLiteCommand("insert into CommandAliases(Command, Alias) values(@Command, @Alias)", dbConnection);
-      sql.Parameters.Add(new SQLiteParameter("@Command", twitchCommand.command));
-      sql.Parameters.Add(new SQLiteParameter("@Alias", alias));
-      return sql.ExecuteNonQuery() > 0;
-    }
-    
     public static void SetHasAutoFollowed(
       string userId,
       bool hasAutoFollowed = true)
@@ -111,35 +95,6 @@ namespace HD
       command.Parameters.Add(new SQLiteParameter("@userid", streamerId));
       command.Parameters.Add(new SQLiteParameter("@message", newShoutoutMessage));
       command.ExecuteNonQuery();
-    }
-
-    internal static CreateOrUpdateResult CreateOrUpdateCommand(
-      string commandName,
-      string commandText,
-      UserLevel userLevel,
-      int timeoutInSeconds)
-    {
-      // TODO use cooldown table
-      SQLiteCommand command = new SQLiteCommand(
-        "update commands set Response=@Response,UserLevel=@UserLevel,CooldownInSeconds=@CooldownInSeconds where Command=@Command COLLATE NOCASE"
-        , dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Command", commandName));
-      command.Parameters.Add(new SQLiteParameter("@Response", commandText));
-      command.Parameters.Add(new SQLiteParameter("@UserLevel", (int)userLevel));
-      command.Parameters.Add(new SQLiteParameter("@CooldownInSeconds", timeoutInSeconds));
-
-      try
-      {
-        int result = command.ExecuteNonQuery();
-
-        if (result > 0)
-        {
-          return CreateOrUpdateResult.Updated;
-        }
-      }
-      catch (Exception) { }
-
-      return CreateNewCommand(command);
     }
 
     internal static void StoreUser(
@@ -219,88 +174,57 @@ namespace HD
       return Convert.ToInt32(command.ExecuteScalar()) + 1;
     }
 
-    public static bool DeleteCommand(
-      string command)
-    {
-      if (DeleteAlias(command))
-      {
-        return true;
-      }
-
-      SQLiteCommand sql = new SQLiteCommand(
-        "delete from commands where Command=@Command", dbConnection);
-      sql.Parameters.Add(new SQLiteParameter("@Command", command));
-
-      if (sql.ExecuteNonQuery() > 0)
-      {
-        DeleteAliasByCommandName(command);
-        return true;
-      }
-      return false;
-    }
-
-    public static void ExecuteNonQuery(
+    public static bool ExecuteNonQuery(
       string sql,
       params (string name, object value)[] parameters)
     {
       SQLiteCommand command = CreateCommand(sql, parameters);
 
-      command.ExecuteNonQuery();
-    }
-
-    private static SQLiteCommand CreateCommand(string sql, (string name, object value)[] parameters)
-    {
-      SQLiteCommand command = new SQLiteCommand(sql, dbConnection);
-      for (int i = 0; i < parameters.Length; i++)
-      {
-        (string name, object value) = parameters[i];
-        command.Parameters.Add(new SQLiteParameter(name, value));
-      }
-
-      return command;
-    }
-    #endregion
-
-    #region Private Write API
-    private static CreateOrUpdateResult CreateNewCommand(
-      SQLiteCommand command)
-    {
-      // TODO use cooldowntable
-      command.CommandText = "insert into commands(Command,Response,UserLevel,CooldownInSeconds) values(@Command,@Response,@UserLevel,@CooldownInSeconds)";
-      try
-      {
-        int result = command.ExecuteNonQuery();
-
-        if (result > 0)
-        {
-          return CreateOrUpdateResult.Created;
-        }
-      }
-      catch (Exception) { }
-
-      return CreateOrUpdateResult.Fail;
-    }
-
-    static bool DeleteAlias(
-      string alias)
-    {
-      SQLiteCommand command = new SQLiteCommand("delete from CommandAliases where Alias=@Alias", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Alias", alias));
-      int count = command.ExecuteNonQuery();
-      return count > 0;
-    }
-
-    static bool DeleteAliasByCommandName(
-      string commandName)
-    {
-      SQLiteCommand command = new SQLiteCommand("delete from CommandAliases where Command=@Command", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Command", commandName));
-      int count = command.ExecuteNonQuery();
-      return count > 0;
+      return command.ExecuteNonQuery() > 0;
     }
     #endregion
 
     #region Read API
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="tableName"></param>
+    /// <param name="tableDefinition">
+    /// e.g. `{commandField}` TEXT NOT NULL, `{responseField}` TEXT NOT NULL
+    /// </param>
+    /// <param name="fieldList">
+    /// e.g. {commandField}, {responseField}, {userLevelField}
+    /// </param>
+    /// <returns></returns>
+    public static string GetSqlAlterTable(
+      string tableName, 
+      string tableDefinition,
+      string fieldList)
+    {
+      return $@"
+PRAGMA foreign_keys=off;
+ 
+BEGIN TRANSACTION;
+ 
+ALTER TABLE {tableName} RENAME TO temp_{tableName};
+ 
+CREATE TABLE {tableName}(
+( 
+  {tableDefinition}
+);
+ 
+INSERT INTO {tableName} ({fieldList})
+  SELECT {fieldList}
+  FROM temp_{tableName};
+ 
+DROP TABLE temp_{tableName};
+ 
+COMMIT;
+ 
+PRAGMA foreign_keys=on;
+            ";
+    }
+
     public static DbDataReader GetReader(
       string sql, 
       params (string key, object value)[] parameters)
@@ -345,41 +269,6 @@ namespace HD
     //  return (projectContributions, totalContributions);
     //}
        
-    public static SqlTwitchCommand GetCommand(
-     string commandName,
-     bool shouldPreventRecursion = false)
-    {
-      SQLiteCommand command = new SQLiteCommand(
-              "select * from commands where Command=@Command COLLATE NOCASE", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Command", commandName));
-      using (SQLiteDataReader reader = command.ExecuteReader())
-      {
-        if (reader.Read())
-        {
-          return new SqlTwitchCommand(
-            (string)reader["Command"],
-            (string)reader["Response"],
-            (UserLevel)(long)reader["UserLevel"],
-            TimeSpan.FromSeconds(reader.GetLong("CooldownInSeconds")),
-            new DateTime(reader.GetLong("LastSentInTicks")));
-        }
-        else if (shouldPreventRecursion == false)
-        {
-          command = new SQLiteCommand(
-                "select Command from CommandAliases where Alias=@Alias COLLATE NOCASE", dbConnection);
-          command.Parameters.Add(new SQLiteParameter("@Alias", commandName));
-          using (SQLiteDataReader aliasReader = command.ExecuteReader())
-          {
-            if (aliasReader.HasRows)
-            {
-              return GetCommand((string)aliasReader["Command"], shouldPreventRecursion: true);
-            }
-          }
-        }
-      }
-
-      return default(SqlTwitchCommand);
-    }
 
     //internal static List<(string project, string category, string contribution)> GetContributions(
     //  string userId)
@@ -410,28 +299,6 @@ namespace HD
       return (UserLevel)(long)(command.ExecuteScalar() ?? 0);
     }
 
-    internal static List<string> GetCommandList(
-      UserLevel userLevel)
-    {
-      SQLiteCommand command = new SQLiteCommand(
-       "select Command from commands where UserLevel<=@UserLevel order by Command", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@UserLevel", (int)userLevel));
-
-      using (SQLiteDataReader reader = command.ExecuteReader())
-      {
-        if (reader.HasRows == false)
-        {
-          return null;
-        }
-        List<string> commandList = new List<string>();
-        while (reader.Read())
-        {
-          commandList.Add((string)reader["Command"]);
-        }
-        return commandList;
-      }
-    }
-
     internal static bool HasAutoFollowedBefore(
       string userId)
     {
@@ -454,54 +321,22 @@ namespace HD
       command.Parameters.Add(new SQLiteParameter("@UserId", userIdToShoutout));
       return (string)command.ExecuteScalar();
     }
-
-    internal static (string command, List<string> aliasList) GetAliases(
-      string commandOrAlias)
-    {
-      SqlTwitchCommand twitchCommand = GetCommand(commandOrAlias);
-      string command = twitchCommand.command;
-
-      SQLiteCommand sql = new SQLiteCommand(
-        "select alias from CommandAliases where Command=@Command", dbConnection);
-      sql.Parameters.Add(new SQLiteParameter("@Command", command));
-      using (SQLiteDataReader reader = sql.ExecuteReader())
-      {
-        if (reader.HasRows)
-        {
-          List<string> aliasList = new List<string>();
-          while (reader.Read())
-          {
-            aliasList.Add((string)reader["Alias"]);
-          }
-          return (command, aliasList);
-        }
-      }
-
-      return (null, null);
-    }
     #endregion
 
     #region Private Read API
-    static SQLiteDataReader GetReaderForIntKey(
-      string key)
+    static SQLiteCommand CreateCommand(
+      string sql, 
+      (string name, object value)[] parameters)
     {
-      SQLiteCommand command = new SQLiteCommand(
-              "select * from keyintvalue where key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
+      SQLiteCommand command = new SQLiteCommand(sql, dbConnection);
+      for (int i = 0; i < parameters.Length; i++)
+      {
+        (string name, object value) = parameters[i];
+        command.Parameters.Add(new SQLiteParameter(name, value));
+      }
 
-      return command.ExecuteReader();
+      return command;
     }
-
-    static SQLiteDataReader GetReaderForKey(
-      string key)
-    {
-      SQLiteCommand command = new SQLiteCommand(
-              "select * from keyvalue where key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-
-      return command.ExecuteReader();
-    }
-
     #endregion
   }
 }

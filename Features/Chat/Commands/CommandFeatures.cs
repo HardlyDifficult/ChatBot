@@ -5,6 +5,9 @@ using System.Text;
 
 namespace HD
 {
+  /// <summary>
+  /// All commands are registered with this class.
+  /// </summary>
   public class CommandFeatures : IBotFeature
   {
     #region Data
@@ -91,7 +94,7 @@ namespace HD
         WhisperCommandAliases(message, tokens[1]);
       }
       else
-      { 
+      {
         CreateAliases(message, tokens[1], tokens, 2);
       }
     }
@@ -105,14 +108,7 @@ namespace HD
         return;
       }
 
-      if (SqlManager.DeleteCommand(command))
-      {
-        TwitchController.SendWhisper(message.displayName, $"Deleted {command}");
-      }
-      else
-      {
-        TwitchController.SendWhisper(message.displayName, "Failed.. to delete a command, !delete !oldcommand");
-      }
+      DeleteCommand(message, command);
     }
 
     void OnHelp(
@@ -120,42 +116,10 @@ namespace HD
     {
       if (UserLevelHelpers.Get(message.userId) >= UserLevel.Mods)
       {
-
-        string command = message.message.GetAfter(" ");
-        for (int i = 0; i < dynamicCommandList.Count; i++)
-        {
-          DynamicCommand dynamicCommand = dynamicCommandList[i];
-          if (dynamicCommand.command.Equals(command, StringComparison.InvariantCultureIgnoreCase))
-          {
-            if (dynamicCommand.helpMessage != null)
-            {
-              TwitchController.SendWhisper(message.displayName, dynamicCommand.helpMessage);
-              return;
-            }
-          }
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.Append("I can tell you more about: ");
-        bool first = true;
-        for (int i = 0; i < dynamicCommandList.Count; i++)
-        {
-          DynamicCommand dynamicCommand = dynamicCommandList[i];
-          if (dynamicCommand.helpMessage != null)
-          {
-            if (first == false)
-            {
-              builder.Append(", ");
-            }
-            first = false;
-
-            builder.Append(dynamicCommand.command);
-          }
-        }
-        TwitchController.SendWhisper(message.displayName, builder.ToString());
+        SendModHelp(message);
       }
       else
-      {
+      { // There is no help for users other than the command list
         OnSendCommandList(message);
       }
     }
@@ -163,8 +127,7 @@ namespace HD
     void OnSendCommandList(
       Message message)
     {
-      string commandList = GetCommandListMessage(message.userLevel);
-      TwitchController.SendWhisper(message.displayName, commandList);
+      SendCommandList(message);
     }
 
     void OnUpdateCommand(
@@ -172,26 +135,22 @@ namespace HD
     {
       if (TryGetNewCommandDetails(message, out string commandName, out string commandText, out UserLevel userLevel, out int timeoutInSeconds))
       {
-        CreateOrUpdateResult result = SqlManager.CreateOrUpdateCommand(commandName, commandText, userLevel, timeoutInSeconds);
-
-        switch (result)
-        {
-          default:
-          case CreateOrUpdateResult.Fail:
-            TwitchController.SendWhisper(message.displayName, "Failed to create command..");
-            break;
-          case CreateOrUpdateResult.Created:
-          case CreateOrUpdateResult.Updated:
-            TwitchController.SendWhisper(message.displayName, $"Command {result}: {commandName} {userLevel} {timeoutInSeconds} = {commandText}");
-            break;
-        }
+        CreateOrUpdateCommand(message, commandName, commandText, userLevel, TimeSpan.FromSeconds(timeoutInSeconds));
       }
     }
     #endregion
 
+    #region Write
+    /// <summary>
+    /// Registers a new command, which will be called by this class when triggered a user.
+    /// </summary>
+    public void Add(
+      DynamicCommand dynamicCommand)
+    {
+      dynamicCommandList.Add(dynamicCommand);
+    }
 
-
-    static void CreateAliases(
+    public void CreateAliases(
       Message message,
       string existingCommandOrAlias,
       string[] aliasListToCreate,
@@ -200,18 +159,94 @@ namespace HD
       for (int i = startingIndex; i < aliasListToCreate.Length; i++)
       {
         string alias = aliasListToCreate[i];
-        if (SqlManager.CreateAlias(existingCommandOrAlias, alias))
+        if (CommandAliasesTable.instance.CreateAlias(existingCommandOrAlias, alias))
         {
-          BotLogic.SendModReply(message.displayName, $"Created alias for {existingCommandOrAlias}: {alias}");
+          BotLogic.SendModReply(
+            message.displayName,
+            $"Created alias for {existingCommandOrAlias}: {alias}");
         }
       }
     }
 
-    static void WhisperCommandAliases(
+    public void CreateOrUpdateCommand(
+      Message message,
+      string commandName,
+      string commandText,
+      UserLevel userLevel,
+      TimeSpan timeout)
+    {
+      if (CommandsTable.instance.CreateOrUpdateCommand(commandName, commandText, userLevel))
+      {
+        // Ensure that the commandName is correct (vs an alias)
+        SqlTwitchCommand newCommand = CommandsTable.instance.GetCommand(commandName);
+        commandName = newCommand.command;
+
+        CooldownTable.instance.SetCooldown(commandName, timeout);
+
+        TwitchController.SendWhisper(message.displayName,
+          $"Command: {commandName} {userLevel} {timeout} = {commandText}");
+      }
+      else
+      {
+        TwitchController.SendWhisper(message.displayName, "Failed to create command..");
+      }
+    }
+
+    public void DeleteAlias(
+      Message message,
+      string[] aliasesToDelete,
+      int startIndex)
+    {
+      for (int i = startIndex; i < aliasesToDelete.Length; i++)
+      {
+        if (CommandsTable.instance.DeleteCommand(aliasesToDelete[i]))
+        {
+          BotLogic.SendModReply(message.displayName, $"Deleted {aliasesToDelete[i]}");
+        }
+      }
+    }
+
+    public void DeleteCommand(
+      Message message,
+      string commandOrAliasToDelete)
+    {
+      SqlTwitchCommand command = GetCommand(commandOrAliasToDelete);
+      if (command.isValid == false)
+      { // Command not found
+        return;
+      }
+      string commandToDelete = command.command;
+
+      if (CommandsTable.instance.DeleteCommand(commandToDelete))
+      {
+        TwitchController.SendWhisper(message.displayName, $"Deleted {commandToDelete}");
+      }
+      else
+      {
+        TwitchController.SendWhisper(message.displayName, "Failed.. to delete a command, !delete !oldcommand");
+      }
+    }
+    #endregion
+
+    #region Read
+    public SqlTwitchCommand GetCommand(
+      string commandOrAlias)
+    {
+      return CommandsTable.instance.GetCommand(commandOrAlias);
+    }
+
+    public void SendCommandList(
+      Message message)
+    {
+      string commandList = GetCommandListMessage(message.userLevel);
+      TwitchController.SendWhisper(message.displayName, commandList);
+    }
+
+    public static void WhisperCommandAliases(
       Message message,
       string existingCommandOrAlias)
     {
-      (string command, List<string> aliasList) = SqlManager.GetAliases(existingCommandOrAlias);
+      (string command, List<string> aliasList) = CommandAliasesTable.instance.GetAliases(existingCommandOrAlias);
       if (command == null)
       {
         return;
@@ -230,26 +265,45 @@ namespace HD
       TwitchController.SendWhisper(message.displayName, response.ToString());
     }
 
-    static void DeleteAlias(
-      Message message,
-      string[] aliasesToDelete,
-      int startIndex)
+    public void SendModHelp(
+     Message message)
     {
-      for (int i = startIndex; i < aliasesToDelete.Length; i++)
+      string command = message.message.GetAfter(" ");
+      for (int i = 0; i < dynamicCommandList.Count; i++)
       {
-        if (SqlManager.DeleteCommand(aliasesToDelete[i]))
+        DynamicCommand dynamicCommand = dynamicCommandList[i];
+        if (dynamicCommand.command.Equals(command, StringComparison.InvariantCultureIgnoreCase))
         {
-          BotLogic.SendModReply(message.displayName, $"Deleted {aliasesToDelete[i]}");
+          if (dynamicCommand.helpMessage != null)
+          {
+            TwitchController.SendWhisper(message.displayName, dynamicCommand.helpMessage);
+            return;
+          }
         }
       }
-    }
 
-    public void Add(
-      DynamicCommand dynamicCommand)
-    {
-      dynamicCommandList.Add(dynamicCommand);
-    }
+      StringBuilder builder = new StringBuilder();
+      builder.Append("I can tell you more about: ");
+      bool first = true;
+      for (int i = 0; i < dynamicCommandList.Count; i++)
+      {
+        DynamicCommand dynamicCommand = dynamicCommandList[i];
+        if (dynamicCommand.helpMessage != null)
+        {
+          if (first == false)
+          {
+            builder.Append(", ");
+          }
+          first = false;
 
+          builder.Append(dynamicCommand.command);
+        }
+      }
+      TwitchController.SendWhisper(message.displayName, builder.ToString());
+    }
+    #endregion
+
+    #region Helpers
     void ProcessDynamicCommands(
      Message message)
     {
@@ -264,30 +318,30 @@ namespace HD
       Message message)
     {
       string firstWord = message.message.GetBefore(" ");
-      SqlTwitchCommand command = SqlManager.GetCommand(firstWord);
-      if (command.command != null)
-      {
-        if (message.userLevel < command.userLevel)
-        {
-          return;
-        }
+      SqlTwitchCommand command = CommandsTable.instance.GetCommand(firstWord);
+      if (command.isValid == false)
+      { // Command not found
+        return;
+      }
+      if (message.userLevel < command.userLevel)
+      { // You don't have permission
+        return;
+      }
 
-        bool cooldownReady = CooldownTable.instance.IsReady(command.command);
-        string response = SwapInVariables(command.response);
-        if (BotLogic.SendMessageOrWhisper(message, response, cooldownReady))
-        {
-          CooldownTable.instance.SetTime(command.command);
-        }
+      bool cooldownReady = CooldownTable.instance.IsReady(command.command);
+      string response = SwapInVariables(command.response);
+      if (BotLogic.SendMessageOrWhisper(message, response, cooldownReady))
+      {
+        CooldownTable.instance.SetTime(command.command);
       }
     }
-
 
     string GetCommandListMessage(
         UserLevel userLevel)
     {
       StringBuilder builder = new StringBuilder();
 
-      List<string> commandList = SqlManager.GetCommandList(userLevel);
+      List<string> commandList = CommandsTable.instance.GetCommandList(userLevel);
       if (commandList != null)
       {
         for (int i = 0; i < commandList.Count; i++)
@@ -374,6 +428,6 @@ namespace HD
 
       return true;
     }
-
+    #endregion
   }
 }

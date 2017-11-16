@@ -100,7 +100,6 @@
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Systems\BotLogic.cs" />
-    <Compile Include="Backend\Sql\CreateOrUpdateResult.cs" />
     <Compile Include="Data\Settings\BotSettings.cs" />
     <Compile Include="Data\Settings\TwitchSettings.cs" />
     <Compile Include="Data\Settings\TwitterSettings.cs" />
@@ -108,8 +107,8 @@
     <Compile Include="Backend\Sql\SQLiteDataReaderExtensions.cs" />
     <Compile Include="Backend\Sql\SqlManager.cs" />
     <Compile Include="Features\Chat\Commands\SqlTwitchCommand.cs" />
-    <Compile Include="Features\Chat\Commands\CommandAliasesTable.cs" />
-    <Compile Include="Features\Chat\Commands\CommandsTable.cs" />
+    <Compile Include="Features\Chat\Commands\Data\CommandAliasesTable.cs" />
+    <Compile Include="Features\Chat\Commands\Data\CommandsTable.cs" />
     <Compile Include="Data\Sql\Tables\SchemaTable.cs" />
     <Compile Include="Features\Chat\Shoutouts\ShoutoutsTable.cs" />
     <Compile Include="Features\Chat\Time\Data\StreamHistoryTable.cs" />

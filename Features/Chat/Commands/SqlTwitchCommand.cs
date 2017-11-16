@@ -5,23 +5,29 @@ namespace HD
 {
   public struct SqlTwitchCommand
   {
+    #region Data
     public readonly string command, response;
     public readonly UserLevel userLevel;
-    public readonly TimeSpan cooldown;
-    public readonly DateTime lastSent;
+    #endregion
+
+    #region Properties
+    public bool isValid
+    {
+      get
+      {
+        return command != null;
+      }
+    }
+    #endregion
 
     public SqlTwitchCommand(
       string command,
       string response,
-      UserLevel userLevel,
-      TimeSpan cooldown,
-      DateTime lastSent)
+      UserLevel userLevel)
     {
       this.command = command;
       this.response = response;
       this.userLevel = userLevel;
-      this.cooldown = cooldown;
-      this.lastSent = lastSent;
     }
   }
 }
