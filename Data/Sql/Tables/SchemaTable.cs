@@ -81,10 +81,19 @@ REPLACE INTO {SchemaTable._tableName} ({tableField}, {versionField}) VALUES(@tab
       }
       else
       {
-        return (long?)SqlManager.GetScalar(
-          SchemaTable._tableName,
-          versionField,
-          whereClause: $"{tableField}=\"{tableName}\"") ?? -1; // this should use params instead
+        string sql = $@"
+SELECT {versionField}
+FROM {_tableName}
+WHERE {tableField}=@{tableField}
+          ";
+
+        object result = SqlManager.GetScalar(sql, ($"@{tableField}", tableName));
+        if(result == null)
+        {
+          return -1;
+        }
+
+        return (long)result;
       }
     }
 

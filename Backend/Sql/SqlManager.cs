@@ -62,49 +62,7 @@ namespace HD
       sql.Parameters.Add(new SQLiteParameter("@Alias", alias));
       return sql.ExecuteNonQuery() > 0;
     }
-
-    [Obsolete]
-    internal static void SetLastSentForKey(
-      string key)
-    {
-      SQLiteCommand command = new SQLiteCommand(
-        "update keyintvalue set LastSentInTicks=@LastSentInTicks where Key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-      command.Parameters.Add(new SQLiteParameter("@LastSentInTicks", DateTime.Now.Ticks));
-      command.ExecuteNonQuery();
-    }
-
-    [Obsolete]
-    internal static void SetLastSentForCommand(
-      string command)
-    {
-      SQLiteCommand updateLastSent = new SQLiteCommand("update commands set LastSentInTicks=@LastSentInTicks where command=@Command COLLATE NOCASE", dbConnection);
-      updateLastSent.Parameters.Add(new SQLiteParameter("@LastSentInTicks", DateTime.Now.Ticks));
-      updateLastSent.Parameters.Add(new SQLiteParameter("@Command", command));
-      updateLastSent.ExecuteNonQuery();
-    }
-
-    [Obsolete]
-    internal static void SetStreamEtaInTicks(
-      long ticks,
-      string message)
-    {
-      const string key = "ETA";
-      SQLiteCommand command = new SQLiteCommand(
-              "update keyintvalue set Value=@Value where Key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-      command.Parameters.Add(new SQLiteParameter("@Value", ticks));
-      int count = command.ExecuteNonQuery();
-
-      if (count == 0)
-      {
-        command.CommandText = "insert into keyintvalue (Key, Value) values(@Key, @Value)";
-        command.ExecuteNonQuery();
-      }
-
-      SetStringValue(key, message);
-    }
-
+    
     public static void SetHasAutoFollowed(
       string userId,
       bool hasAutoFollowed = true)
@@ -161,6 +119,7 @@ namespace HD
       UserLevel userLevel,
       int timeoutInSeconds)
     {
+      // TODO use cooldown table
       SQLiteCommand command = new SQLiteCommand(
         "update commands set Response=@Response,UserLevel=@UserLevel,CooldownInSeconds=@CooldownInSeconds where Command=@Command COLLATE NOCASE"
         , dbConnection);
@@ -306,6 +265,7 @@ namespace HD
     private static CreateOrUpdateResult CreateNewCommand(
       SQLiteCommand command)
     {
+      // TODO use cooldowntable
       command.CommandText = "insert into commands(Command,Response,UserLevel,CooldownInSeconds) values(@Command,@Response,@UserLevel,@CooldownInSeconds)";
       try
       {
@@ -367,128 +327,7 @@ namespace HD
       SQLiteCommand command = CreateCommand(sql, parameters);
       return command.ExecuteScalar();
     }
-
-    [Obsolete]
-    public static object GetScalar(
-      string table,
-      string field,
-      string whereClause = null,
-      string orderByField = null,
-      bool descendingSort = false)
-    {
-      StringBuilder builder = new StringBuilder();
-      builder.Append("select ");
-      builder.Append(field);
-      builder.Append(" from ");
-      builder.Append(table);
-      if (whereClause != null)
-      {
-        builder.Append(" where ");
-        builder.Append(whereClause);
-      }
-      if (orderByField != null)
-      {
-        builder.Append(" order by ");
-        builder.Append(orderByField);
-        if (descendingSort)
-        {
-          builder.Append(" desc");
-        }
-      }
-      builder.Append(" limit 1 COLLATE NOCASE ");
-
-      SQLiteCommand command = new SQLiteCommand(builder.ToString(), dbConnection);
-      return command.ExecuteScalar();
-    }
-
-    internal static bool GetIsReady(
-      string key)
-    {
-      SQLiteCommand command = new SQLiteCommand(
-        "select LastSentInTicks, CooldownInSeconds from keyintvalue where Key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-      using (DbDataReader dataReader = command.ExecuteReader())
-      {
-        return CooldownIsReady(UserLevel.Everyone, dataReader);
-      }
-    }
-
-    [Obsolete]
-    public static (string dataValue, bool cooldownReady) GetValueIfReady(
-     UserLevel userLevel,
-     string key)
-    {
-      try
-      {
-        string dataValue = null;
-        bool cooldownReady = false;
-        using (SQLiteDataReader reader = GetReaderForIntKey(key))
-        {
-          if (reader.Read())
-          {
-            cooldownReady = CooldownIsReady(userLevel, reader);
-            dataValue = (string)reader["Value"];
-          }
-        }
-
-        return (null, cooldownReady);
-      }
-      catch { }
-
-      return (null, false);
-    }
-
-    [Obsolete]
-    public static (long dataValue, bool cooldownReady) GetLongValueIfReady(
-     UserLevel userLevel,
-     string key)
-    {
-      try
-      {
-        long dataValue = 0;
-        bool cooldownReady = false;
-        using (SQLiteDataReader reader = GetReaderForIntKey(key))
-        {
-          if (reader.Read())
-          {
-            cooldownReady = CooldownIsReady(userLevel, reader);
-            dataValue = (long)reader["Value"];
-          }
-        }
-
-        return (dataValue, cooldownReady);
-      }
-      catch { }
-
-      return (0, false);
-    }
-
-    public static string GetStringValue(
-     string key)
-    {
-      SQLiteCommand command = new SQLiteCommand("SELECT Value from KeyStringValue where key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-      object value = command.ExecuteScalar();
-      if (value is DBNull)
-      {
-        return null;
-      }
-      return (string)value;
-    }
-
-    public static long GetLongValue(
-     string key)
-    {
-      SQLiteCommand command = new SQLiteCommand("SELECT Value from KeyIntValue where key=@Key", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@Key", key));
-      object value = command.ExecuteScalar();
-      if (value is DBNull)
-      {
-        return 0;
-      }
-      return (long)value;
-    }
-
+    
     //public static (int projectContributions, int totalContributions) GetCreditsCount(
     //  string userId,
     //  string project)
@@ -505,76 +344,7 @@ namespace HD
 
     //  return (projectContributions, totalContributions);
     //}
-
-    [Obsolete]
-    static bool CooldownIsReady(
-     UserLevel userLevel,
-     DbDataReader reader)
-    {
-      try
-      {
-        long cooldownInSeconds = (long)reader["CooldownInSeconds"];
-        long lastSentInTicks = (long)reader["LastSentInTicks"];
-        return CooldownIsReady(userLevel, cooldownInSeconds, lastSentInTicks);
-      }
-      catch { }
-
-      return false;
-    }
-
-    [Obsolete]
-    static bool CooldownIsReady(
-      UserLevel userLevel,
-      long cooldownInSeconds,
-      long lastSentInTicks)
-    {
-      switch (userLevel)
-      {
-        case UserLevel.Mods:
-          cooldownInSeconds = 5;
-          break;
-        case UserLevel.Owner:
-          cooldownInSeconds = 1;
-          break;
-      }
-
-      long currentTimeInTicks = DateTime.Now.Ticks;
-
-      return currentTimeInTicks - lastSentInTicks > TimeSpan.FromSeconds(cooldownInSeconds).Ticks;
-    }
-
-    [Obsolete]
-    public static bool CooldownIsReady(
-     UserLevel userLevel,
-     SqlTwitchCommand command)
-    {
-      long cooldownInSeconds = (long)command.cooldown.TotalSeconds;
-      long lastSentInTicks = (long)command.lastSent.Ticks;
-      return CooldownIsReady(userLevel, cooldownInSeconds, lastSentInTicks);
-    }
-
-    [Obsolete]
-    public static bool CooldownIsReadyForIntKey(
-      UserLevel userLevel,
-      string key)
-    {
-      try
-      {
-        using (SQLiteDataReader reader = GetReaderForIntKey(key))
-        {
-          if (reader.Read())
-          {
-            return CooldownIsReady(userLevel, reader);
-          }
-        }
-
-      }
-      catch { }
-
-      return false;
-    }
-
-
+       
     public static SqlTwitchCommand GetCommand(
      string commandName,
      bool shouldPreventRecursion = false)

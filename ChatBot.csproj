@@ -109,7 +109,6 @@
     <Compile Include="Features\Chat\Commands\SqlTwitchCommand.cs" />
     <Compile Include="Features\Chat\Commands\CommandAliasesTable.cs" />
     <Compile Include="Features\Chat\Commands\CommandsTable.cs" />
-    <Compile Include="Data\Sql\Tables\KeyIntValueTable.cs" />
     <Compile Include="Data\Sql\Tables\SchemaTable.cs" />
     <Compile Include="Features\Chat\Shoutouts\ShoutoutsTable.cs" />
     <Compile Include="Features\Chat\Time\Data\StreamHistoryTable.cs" />

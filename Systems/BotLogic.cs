@@ -82,12 +82,14 @@ namespace HD
 
       hasSomeoneSaidSomethingSinceGoingLive = false;
 
+      const string key = "Twitter";
+
       if (goLiveMessage != null && goLiveMessage.Length > 3)
       {
-        if (SqlManager.GetIsReady("Twitter"))
+        if(CooldownTable.instance.IsReady(key))
         {
-          SqlManager.SetLastSentForKey("Twitter");
           SendTweetAndPulse($"Live now! {goLiveMessage}", isForLiveThread: true);
+          CooldownTable.instance.SetTime(key);
         }
       }
       else
@@ -264,11 +266,11 @@ namespace HD
           return;
         }
 
-        bool cooldownReady = SqlManager.CooldownIsReady(message.userLevel, command);
+        bool cooldownReady = CooldownTable.instance.IsReady(command.command);
         string response = SwapInVariables(command.response);
         if (SendMessageOrWhisper(message, response, cooldownReady))
         {
-          SqlManager.SetLastSentForCommand(command.command);
+          CooldownTable.instance.SetTime(command.command);
         }
       }
     }
@@ -663,12 +665,9 @@ namespace HD
         return message;
       }
 
-      string eduMessage = SqlManager.GetStringValue("EDU");
-      if (eduMessage == null)
-      {
-        eduMessage = "";
-      }
+      KeyStringValueTable.instance.TryGetValue("EDU", out string eduMessage);
       message = message.Substring(0, index) + eduMessage + message.Substring(index + 5);
+
       return message;
     }
 
@@ -843,23 +842,8 @@ namespace HD
     static void SendCommandList(
       Message message)
     {
-      if (message.isWhisper)
-      {
-        string commandList = GetCommandListMessage(message.userLevel);
-        TwitchController.SendWhisper(message.displayName, commandList);
-      }
-      else
-      {
-        const string key = "WhisperRequired";
-        (string dataValue, bool isCooldownReady) = SqlManager.GetValueIfReady(message.userLevel, key);
-        if (isCooldownReady && dataValue != null)
-        {
-          SqlManager.SetLastSentForKey(key);
-
-          TwitchController.SendWhisper(message.displayName, GetCommandListMessage(message.userLevel));
-          TwitchController.SendMessage(dataValue);
-        }
-      }
+      string commandList = GetCommandListMessage(message.userLevel);
+      TwitchController.SendWhisper(message.displayName, commandList);
     }
 
     static string GetCommandListMessage(

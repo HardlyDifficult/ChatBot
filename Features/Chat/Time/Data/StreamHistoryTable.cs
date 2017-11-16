@@ -96,11 +96,13 @@ VALUES(@{timeField}, @{stateField})
         return null;
       }
 
-      object result = SqlManager.GetScalar(
-         tableName,
-         timeField,
-         orderByField: timeField,
-         descendingSort: true);
+      string sql = $@"
+SELECT {timeField}
+FROM {tableName}
+ORDER BY {timeField} DESC
+        ";
+
+      object result = SqlManager.GetScalar(sql);
 
       if (result == null)
       { // No data available yet
@@ -113,11 +115,13 @@ VALUES(@{timeField}, @{stateField})
 
     public HistoryState GetLastState()
     {
-      object result = SqlManager.GetScalar(
-        tableName,
-        stateField,
-        orderByField: timeField,
-        descendingSort: true);
+      string sql = $@"
+SELECT {stateField}
+FROM {tableName}
+ORDER BY {timeField} DESC
+        ";
+
+      object result = SqlManager.GetScalar(sql);
 
       if (result == null)
       {
