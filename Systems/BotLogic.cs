@@ -12,7 +12,7 @@ namespace HD
     #region Data
     public static event Action<TwitchUser> onJoin;
 
-    static readonly List<DynamicCommand> dynamicCommandList = new List<DynamicCommand>();
+    public static event Action<Message> onMessage;
 
     static bool hasSomeoneSaidSomethingSinceGoingLive;
     #endregion
@@ -46,25 +46,19 @@ namespace HD
         featureList[i].Init();
       }
 
-
       TimeFeatures.instance.onGoLive += OnGoLive;
-
 
       // TODO broken dynamicCommandList.Add(new DynamicCommand("!subcount", null, UserLevel.Everyone, GetSubCount));
 
-      dynamicCommandList.Add(new DynamicCommand("!edu", "TODO", UserLevel.Everyone, Edu.OnCommand));
-      dynamicCommandList.Add(new DynamicCommand("!command", "!command !commandName [userLevel:Everyone|Follower|Subscribers|Mods|Owner (default Everyone)] [timeoutInSeconds (default 200)] = commandText", UserLevel.Mods, UpdateCommand));
-      dynamicCommandList.Add(new DynamicCommand("!alias", "List: !alias !commandName; Create: !alias !commandName !aliasName !additionalAliasName; Delete: !alias delete !aliasName", UserLevel.Mods, CreateAlias));
-      dynamicCommandList.Add(new DynamicCommand("!delete", "!delete !commandName", UserLevel.Mods, DeleteCommand));
+      CommandFeatures.instance.Add(new DynamicCommand("!edu", "TODO", UserLevel.Everyone, Edu.OnCommand));
+
       //dynamicCommandList.Add(new DynamicCommand("!edu", "!edu Message", UserLevel.Mods, UpdateEdu));
       //dynamicCommandList.Add(new DynamicCommand("!credit", null, UserLevel.Mods, RecordCredits));
-      dynamicCommandList.Add(new DynamicCommand("!tweet", "!tweet message for Pulse and Twitter (if not too long)", UserLevel.Mods, SendTweetAndPulse));
-      dynamicCommandList.Add(new DynamicCommand("!title", "!title New Title", UserLevel.Mods, SetTitle));
-      dynamicCommandList.Add(new DynamicCommand("!shoutout", "Give shoutout: !shoutout @Username; Create shoutout: !shoutout @Username = New shoutout message", UserLevel.Mods, Shoutout));
+      CommandFeatures.instance.Add(new DynamicCommand("!tweet", "!tweet message for Pulse and Twitter (if not too long)", UserLevel.Mods, SendTweetAndPulse));
+      CommandFeatures.instance.Add(new DynamicCommand("!title", "!title New Title", UserLevel.Mods, SetTitle));
+      CommandFeatures.instance.Add(new DynamicCommand("!shoutout", "Give shoutout: !shoutout @Username; Create shoutout: !shoutout @Username = New shoutout message", UserLevel.Mods, Shoutout));
       // TODO dynamicCommandList.Add(new DynamicCommand("!setgame", "!setgame gamedev|coding|game name", UserLevel.Mods, SetGame));
-      dynamicCommandList.Add(new DynamicCommand("!help", "Hi!", UserLevel.Everyone, Help));
 
-      dynamicCommandList.Add(new DynamicCommand("!commands", null, UserLevel.Everyone, SendCommandList));
       //dynamicCommandList.Add(new DynamicCommand("!credit", null, UserLevel.Everyone, DisplayCredits));
     }
     #endregion
@@ -86,7 +80,7 @@ namespace HD
 
       if (goLiveMessage != null && goLiveMessage.Length > 3)
       {
-        if(CooldownTable.instance.IsReady(key))
+        if (CooldownTable.instance.IsReady(key))
         {
           SendTweetAndPulse($"Live now! {goLiveMessage}", isForLiveThread: true);
           CooldownTable.instance.SetTime(key);
@@ -124,8 +118,7 @@ namespace HD
         TwitchController.SendMessage($"hardlyHype");
       }
 
-      ProcessDynamicCommands(message);
-      ProcessDatabaseCommands(message);
+      onMessage?.Invoke(message);
     }
 
     public static void OnSub(
@@ -232,49 +225,6 @@ namespace HD
     }
     #endregion
 
-    public static void Add(
-      DynamicCommand dynamicCommand)
-    {
-      dynamicCommandList.Add(dynamicCommand);
-    }
-
-    //public static void OnFollow(
-    //  string userId)
-    //{
-    //  AutoFollow(userId);
-    //}
-
-    static void ProcessDynamicCommands(
-     Message message)
-    {
-      for (int i = 0; i < dynamicCommandList.Count; i++)
-      {
-        DynamicCommand command = dynamicCommandList[i];
-        command.OnMessage(message);
-      }
-    }
-
-    static void ProcessDatabaseCommands(
-      Message message)
-    {
-      string firstWord = message.message.GetBefore(" ");
-      SqlTwitchCommand command = SqlManager.GetCommand(firstWord);
-      if (command.command != null)
-      {
-        if (message.userLevel < command.userLevel)
-        {
-          return;
-        }
-
-        bool cooldownReady = CooldownTable.instance.IsReady(command.command);
-        string response = SwapInVariables(command.response);
-        if (SendMessageOrWhisper(message, response, cooldownReady))
-        {
-          CooldownTable.instance.SetTime(command.command);
-        }
-      }
-    }
-
     // TODO add a help message for SetGame
     /// <summary>
     /// gamedev = Creative/gamedevelopment
@@ -306,51 +256,6 @@ namespace HD
       }
 
       SendModReplyWithTitle(message);
-    }
-
-    static void Help(
-      Message message)
-    {
-      if (UserLevelHelpers.Get(message.userId) >= UserLevel.Mods)
-      {
-
-        string command = message.message.GetAfter(" ");
-        for (int i = 0; i < dynamicCommandList.Count; i++)
-        {
-          DynamicCommand dynamicCommand = dynamicCommandList[i];
-          if (dynamicCommand.command.Equals(command, StringComparison.InvariantCultureIgnoreCase))
-          {
-            if (dynamicCommand.helpMessage != null)
-            {
-              TwitchController.SendWhisper(message.displayName, dynamicCommand.helpMessage);
-              return;
-            }
-          }
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.Append("I can tell you more about: ");
-        bool first = true;
-        for (int i = 0; i < dynamicCommandList.Count; i++)
-        {
-          DynamicCommand dynamicCommand = dynamicCommandList[i];
-          if (dynamicCommand.helpMessage != null)
-          {
-            if (first == false)
-            {
-              builder.Append(", ");
-            }
-            first = false;
-
-            builder.Append(dynamicCommand.command);
-          }
-        }
-        TwitchController.SendWhisper(message.displayName, builder.ToString());
-      }
-      else
-      {
-        SendCommandList(message);
-      }
     }
 
     #region Private Write API
@@ -539,46 +444,6 @@ namespace HD
       SendModReply(message.displayName, $"\"{title}\" {game} / {communityList.ToCsv()}");
     }
 
-    static void DeleteCommand(
-      Message message)
-    {
-      string command = message.message.GetAfter(" ");
-      if (command == null)
-      {
-        return;
-      }
-
-      if (SqlManager.DeleteCommand(command))
-      {
-        TwitchController.SendWhisper(message.displayName, $"Deleted {command}");
-      }
-      else
-      {
-        TwitchController.SendWhisper(message.displayName, "Failed.. to delete a command, !delete !oldcommand");
-      }
-    }
-
-    static void UpdateCommand(
-      Message message)
-    {
-      if (TryGetNewCommandDetails(message, out string commandName, out string commandText, out UserLevel userLevel, out int timeoutInSeconds))
-      {
-        CreateOrUpdateResult result = SqlManager.CreateOrUpdateCommand(commandName, commandText, userLevel, timeoutInSeconds);
-
-        switch (result)
-        {
-          default:
-          case CreateOrUpdateResult.Fail:
-            TwitchController.SendWhisper(message.displayName, "Failed to create command..");
-            break;
-          case CreateOrUpdateResult.Created:
-          case CreateOrUpdateResult.Updated:
-            TwitchController.SendWhisper(message.displayName, $"Command {result}: {commandName} {userLevel} {timeoutInSeconds} = {commandText}");
-            break;
-        }
-      }
-    }
-
     static void UpdateEdu(
       Message message)
     {
@@ -595,80 +460,6 @@ namespace HD
       }
 
       SqlManager.SetStringValue("EDU", eduText);
-    }
-
-    static void CreateAlias(
-      Message message)
-    {
-
-      if (message.message.StartsWith("!alias", StringComparison.InvariantCultureIgnoreCase) == false)
-      {
-        return;
-      }
-
-      string[] tokens = message.message.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-      if (tokens.Length < 2)
-      { // Incomplete
-        return;
-      }
-
-      if (tokens[1].Equals("delete", StringComparison.InvariantCultureIgnoreCase))
-      { // Delete
-        for (int i = 2; i < tokens.Length; i++)
-        {
-          if (SqlManager.DeleteCommand(tokens[i]))
-          {
-            SendModReply(message.displayName, $"Deleted {tokens[i]}");
-          }
-        }
-      }
-      else if (tokens.Length == 2)
-      { // Display
-        (string command, List<string> aliasList) = SqlManager.GetAliases(tokens[1]);
-        if (command == null)
-        {
-          return;
-        }
-        StringBuilder response = new StringBuilder();
-        response.Append(command);
-        response.Append(": ");
-        for (int i = 0; i < aliasList.Count; i++)
-        {
-          if (i > 0)
-          {
-            response.Append(", ");
-          }
-          response.Append(aliasList[i]);
-        }
-        TwitchController.SendWhisper(message.displayName, response.ToString());
-      }
-      else
-      { // Create
-        string command = tokens[1];
-        for (int i = 2; i < tokens.Length; i++)
-        {
-          string alias = tokens[i];
-          if (SqlManager.CreateAlias(command, alias))
-          {
-            SendModReply(message.displayName, $"Created alias for {command}: {alias}");
-          }
-        }
-      }
-    }
-
-    static string SwapInVariables(
-      string message)
-    {
-      int index = message.IndexOf("{edu}", StringComparison.CurrentCultureIgnoreCase);
-      if (index < 0)
-      {
-        return message;
-      }
-
-      KeyStringValueTable.instance.TryGetValue("EDU", out string eduMessage);
-      message = message.Substring(0, index) + eduMessage + message.Substring(index + 5);
-
-      return message;
     }
 
     //static void FollowBot()
@@ -768,7 +559,6 @@ namespace HD
       return (streamerName, shoutoutMessage);
     }
 
-
     //static void DisplayCredits(
     //  Message message)
     //{
@@ -839,44 +629,10 @@ namespace HD
     //  }
     //}
 
-    static void SendCommandList(
-      Message message)
-    {
-      string commandList = GetCommandListMessage(message.userLevel);
-      TwitchController.SendWhisper(message.displayName, commandList);
-    }
-
-    static string GetCommandListMessage(
-        UserLevel userLevel)
-    {
-      StringBuilder builder = new StringBuilder();
-
-      List<string> commandList = SqlManager.GetCommandList(userLevel);
-      if (commandList != null)
-      {
-        for (int i = 0; i < commandList.Count; i++)
-        {
-          builder.Append(commandList[i]);
-          builder.Append(", ");
-        }
-      }
-
-      for (int i = 0; i < dynamicCommandList.Count; i++)
-      {
-        DynamicCommand command = dynamicCommandList[i];
-        if (userLevel >= command.minimumUserLevel)
-        {
-          builder.Append(command.command);
-          builder.Append(", ");
-        }
-      }
-
-      builder.Remove(builder.Length - 2, 2); // Remove last comma
-
-      return builder.ToString();
-    }
-
-    static void SendModReply(
+    /// <summary>
+    /// This will whisper the streamer as well to keep them informed.
+    /// </summary>
+    public static void SendModReply(
       string displayName,
       string message)
     {
@@ -885,54 +641,6 @@ namespace HD
         TwitchController.SendWhisper(BotSettings.twitch.channelUsername, $"{displayName} -> {message}");
       }
       TwitchController.SendWhisper(displayName, message);
-    }
-
-    static bool TryGetNewCommandDetails(
-      Message message,
-      out string commandName,
-      out string commandText,
-      out UserLevel userLevel,
-      out int timeoutInSeconds)
-    {
-      string commandOptions = null;
-
-      commandName = message.message.GetBetween(" ", " ");
-      if (commandName != null)
-      {
-        commandOptions = message.message.GetBetween(commandName, "=");
-      }
-      commandText = message.message.GetAfter("=");
-      userLevel = UserLevel.Everyone;
-      timeoutInSeconds = 200;
-
-      if (commandOptions != null)
-      {
-        string[] commandOptionList = commandOptions.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        for (int i = 0; i < commandOptionList.Length; i++)
-        {
-          if (int.TryParse(commandOptionList[i], out int newTimeout))
-          {
-            timeoutInSeconds = newTimeout;
-          }
-          else if (Enum.TryParse<UserLevel>(commandOptionList[i], out UserLevel newUserLevel))
-          {
-            userLevel = newUserLevel;
-          }
-          else
-          {
-            commandOptions = null;
-            break;
-          }
-        }
-      }
-
-      if (commandName == null || commandOptions == null || commandText == null)
-      {
-        TwitchController.SendWhisper(message.displayName, "Create new commands like so: !commands !newcommand Mods 120 = Command text. ...To Delete, !delete !oldcommand");
-        return false;
-      }
-
-      return true;
     }
 
     static void GetSubCount(

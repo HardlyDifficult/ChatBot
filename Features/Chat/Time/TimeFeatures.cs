@@ -95,25 +95,25 @@ namespace HD
 
     void IBotFeature.Init()
     {
-      BotLogic.Add(new DynamicCommand(
+      CommandFeatures.instance.Add(new DynamicCommand(
         command: "!eta", 
         helpMessage: "!eta timeSpan [= Message]",  
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnSetEta));
 
-      BotLogic.Add(new DynamicCommand(
+      CommandFeatures.instance.Add(new DynamicCommand(
         command: "!live",
         helpMessage: "!live Tweet/Pulse message",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnSetLive));
 
-      BotLogic.Add(new DynamicCommand(
+      CommandFeatures.instance.Add(new DynamicCommand(
         command: "!eta", 
         helpMessage: null, 
         minimumUserLevel: UserLevel.Everyone,
         onCommand: OnShowEta));
 
-      BotLogic.Add(new DynamicCommand(
+      CommandFeatures.instance.Add(new DynamicCommand(
         command: "!uptime",
         helpMessage: null,
         minimumUserLevel: UserLevel.Everyone,
