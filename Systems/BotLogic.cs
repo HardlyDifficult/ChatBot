@@ -12,7 +12,7 @@ namespace HD
     #region Data
     public static event Action<TwitchUser> onJoin;
 
-    public static readonly List<DynamicCommand> dynamicCommandList = new List<DynamicCommand>();
+    static readonly List<DynamicCommand> dynamicCommandList = new List<DynamicCommand>();
 
     static bool hasSomeoneSaidSomethingSinceGoingLive;
     #endregion
@@ -47,12 +47,7 @@ namespace HD
       }
 
 
-
-
-
-
-      ETA.onGoLive += OnGoLive;
-
+      TimeFeatures.instance.onGoLive += OnGoLive;
 
 
       // TODO broken dynamicCommandList.Add(new DynamicCommand("!subcount", null, UserLevel.Everyone, GetSubCount));

@@ -1,5 +1,8 @@
-﻿namespace HD
+﻿using System;
+
+namespace HD
 {
+  [Obsolete]
   public class KeyIntValueTable : ITableMigrator
   {
     long ITableMigrator.currentVersion

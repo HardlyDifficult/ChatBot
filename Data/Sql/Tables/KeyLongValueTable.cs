@@ -2,13 +2,13 @@
 
 namespace HD
 {
-  public class KeyStringValueTable : KeyValueTable<string>
+  public class KeyLongValueTable : KeyValueTable<long>
   {
     public override string valueSqlType
     {
       get
       {
-        return "Text";
+        return "INTEGER";
       }
     }
   }

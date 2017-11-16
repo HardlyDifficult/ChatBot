@@ -173,6 +173,11 @@ ORDER BY {timeField} Desc
 
       return uptime;
     }
+
+    public TimeSpan GetPreviousUptimeToday()
+    {
+      return GetPreviousUptimeSince(DateTime.Now.Date);
+    }
     #endregion
   }
 }

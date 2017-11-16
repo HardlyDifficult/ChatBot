@@ -89,10 +89,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Features\Chat\Time\CooldownTable.cs" />
-    <Compile Include="Features\Chat\Time\HistoryState.cs" />
-    <Compile Include="Features\Chat\Time\IBotFeature.cs" />
-    <Compile Include="Features\Chat\Time\Uptime.cs" />
+    <Compile Include="Data\Sql\Tables\KeyLongValueTable.cs" />
+    <Compile Include="Data\Sql\Tables\KeyStringValueTable.cs" />
+    <Compile Include="Data\Sql\Tables\KeyValueTable.cs" />
+    <Compile Include="Features\Chat\Time\Data\CooldownTable.cs" />
+    <Compile Include="Features\Chat\Time\Data\HistoryState.cs" />
+    <Compile Include="Features\Chat\IBotFeature.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -108,15 +110,14 @@
     <Compile Include="Features\Chat\Commands\CommandAliasesTable.cs" />
     <Compile Include="Features\Chat\Commands\CommandsTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyIntValueTable.cs" />
-    <Compile Include="Data\Sql\Tables\KeyStringValueTable.cs" />
     <Compile Include="Data\Sql\Tables\SchemaTable.cs" />
     <Compile Include="Features\Chat\Shoutouts\ShoutoutsTable.cs" />
-    <Compile Include="Features\Chat\Time\StreamHistoryTable.cs" />
+    <Compile Include="Features\Chat\Time\Data\StreamHistoryTable.cs" />
     <Compile Include="Data\Sql\Tables\SubsTable.cs" />
     <Compile Include="Data\Sql\Tables\UsersTable.cs" />
     <Compile Include="Data\Sql\Shared\TwitchUser.cs" />
-    <Compile Include="Features\Chat\Edu.cs" />
-    <Compile Include="Features\Chat\Time\ETA.cs" />
+    <Compile Include="Features\Chat\Edu\Edu.cs" />
+    <Compile Include="Features\Chat\Time\TimeFeatures.cs" />
     <Compile Include="Features\Overlay\KeyPressMonitor.cs" />
     <Compile Include="Features\Overlay\KeystrokeInfo.cs" />
     <Compile Include="Backend\Throttle.cs" />

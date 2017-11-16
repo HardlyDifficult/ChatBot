@@ -63,6 +63,7 @@ namespace HD
       return sql.ExecuteNonQuery() > 0;
     }
 
+    [Obsolete]
     internal static void SetLastSentForKey(
       string key)
     {
@@ -73,6 +74,7 @@ namespace HD
       command.ExecuteNonQuery();
     }
 
+    [Obsolete]
     internal static void SetLastSentForCommand(
       string command)
     {
@@ -82,6 +84,7 @@ namespace HD
       updateLastSent.ExecuteNonQuery();
     }
 
+    [Obsolete]
     internal static void SetStreamEtaInTicks(
       long ticks,
       string message)
@@ -358,6 +361,15 @@ namespace HD
     }
 
     public static object GetScalar(
+      string sql,
+      params (string name, object value)[] parameters)
+    {
+      SQLiteCommand command = CreateCommand(sql, parameters);
+      return command.ExecuteScalar();
+    }
+
+    [Obsolete]
+    public static object GetScalar(
       string table,
       string field,
       string whereClause = null,
@@ -401,6 +413,7 @@ namespace HD
       }
     }
 
+    [Obsolete]
     public static (string dataValue, bool cooldownReady) GetValueIfReady(
      UserLevel userLevel,
      string key)
@@ -425,6 +438,7 @@ namespace HD
       return (null, false);
     }
 
+    [Obsolete]
     public static (long dataValue, bool cooldownReady) GetLongValueIfReady(
      UserLevel userLevel,
      string key)
@@ -492,6 +506,7 @@ namespace HD
     //  return (projectContributions, totalContributions);
     //}
 
+    [Obsolete]
     static bool CooldownIsReady(
      UserLevel userLevel,
      DbDataReader reader)
@@ -507,6 +522,7 @@ namespace HD
       return false;
     }
 
+    [Obsolete]
     static bool CooldownIsReady(
       UserLevel userLevel,
       long cooldownInSeconds,
@@ -527,6 +543,7 @@ namespace HD
       return currentTimeInTicks - lastSentInTicks > TimeSpan.FromSeconds(cooldownInSeconds).Ticks;
     }
 
+    [Obsolete]
     public static bool CooldownIsReady(
      UserLevel userLevel,
      SqlTwitchCommand command)
@@ -536,6 +553,7 @@ namespace HD
       return CooldownIsReady(userLevel, cooldownInSeconds, lastSentInTicks);
     }
 
+    [Obsolete]
     public static bool CooldownIsReadyForIntKey(
       UserLevel userLevel,
       string key)
