@@ -22,7 +22,7 @@ namespace HD
       RoutedEventArgs e)
     {
       CheckBotSettings();
-      TwitchController.Start();
+      TwitchController.instance.Start();
     }
 
     private void CheckBotSettings()
@@ -45,7 +45,7 @@ namespace HD
       object sender,
       CancelEventArgs e)
     {
-      TwitchController.Stop();
+      TwitchController.instance.Stop();
     }
     #endregion
 
@@ -63,7 +63,7 @@ namespace HD
       {
         string message = Message.Text;
         BotLogic.OnMessage(new Message(
-          TwitchController.twitchChannelId,
+          TwitchController.instance.twitchChannelId,
           BotSettings.twitch.channelUsername,
           UserLevel.Owner,
           message,

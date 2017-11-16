@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Text;
-using System.Reflection;
 using System.Data.SQLite;
-using System.Data.SQLite.Linq;
 
 namespace HD
 {
@@ -29,24 +23,6 @@ namespace HD
     #endregion
 
     #region Write API
-    //public static void AddCredits(
-    //  string creditUserId,
-    //  string reporterUserId,
-    //  string project,
-    //  string category,
-    //  string contribution)
-    //{
-    //  SQLiteCommand command = new SQLiteCommand(
-    //    "insert into credits(CreditUserId, ReporterUserId, DateCreatedInTicks, Project, Category, Contribution) values(@CreditUserId, @ReporterUserId, @DateCreatedInTicks, @Project, @Category, @Contribution)", dbConnection);
-    //  command.Parameters.Add(new SQLiteParameter("@CreditUserId", creditUserId));
-    //  command.Parameters.Add(new SQLiteParameter("@ReporterUserId", reporterUserId));
-    //  command.Parameters.Add(new SQLiteParameter("@DateCreatedInTicks", DateTime.Now.Ticks));
-    //  command.Parameters.Add(new SQLiteParameter("@Project", project));
-    //  command.Parameters.Add(new SQLiteParameter("@Category", category));
-    //  command.Parameters.Add(new SQLiteParameter("@Contribution", contribution));
-    //  command.ExecuteNonQuery();
-    //}
-
     public static void SetHasAutoFollowed(
       string userId,
       bool hasAutoFollowed = true)
@@ -140,7 +116,7 @@ namespace HD
       string userId,
       int tier1To3)
     {
-      if (userId == TwitchController.twitchChannelId)
+      if (userId == TwitchController.instance.twitchChannelId)
       {
         return;
       }
@@ -179,36 +155,26 @@ namespace HD
       params (string name, object value)[] parameters)
     {
       SQLiteCommand command = CreateCommand(sql, parameters);
-
       return command.ExecuteNonQuery() > 0;
     }
     #endregion
 
     #region Read API
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="tableName"></param>
     /// <param name="tableDefinition">
     /// e.g. `{commandField}` TEXT NOT NULL, `{responseField}` TEXT NOT NULL
     /// </param>
     /// <param name="fieldList">
     /// e.g. {commandField}, {responseField}, {userLevelField}
     /// </param>
-    /// <returns></returns>
     public static string GetSqlAlterTable(
       string tableName, 
       string tableDefinition,
       string fieldList)
     {
       return $@"
-PRAGMA foreign_keys=off;
- 
-BEGIN TRANSACTION;
- 
 ALTER TABLE {tableName} RENAME TO temp_{tableName};
  
-CREATE TABLE {tableName}(
+CREATE TABLE {tableName}
 ( 
   {tableDefinition}
 );
@@ -218,10 +184,6 @@ INSERT INTO {tableName} ({fieldList})
   FROM temp_{tableName};
  
 DROP TABLE temp_{tableName};
- 
-COMMIT;
- 
-PRAGMA foreign_keys=on;
             ";
     }
 
@@ -251,43 +213,6 @@ PRAGMA foreign_keys=on;
       SQLiteCommand command = CreateCommand(sql, parameters);
       return command.ExecuteScalar();
     }
-    
-    //public static (int projectContributions, int totalContributions) GetCreditsCount(
-    //  string userId,
-    //  string project)
-    //{
-    //  SQLiteCommand command = new SQLiteCommand(
-    //    "select count(*) from Credits where CreditUserId=@CreditUserId", dbConnection);
-    //  command.Parameters.Add(new SQLiteParameter("@CreditUserId", userId));
-    //  command.Parameters.Add(new SQLiteParameter("@Project", project));
-
-    //  int totalContributions = (int)(long)command.ExecuteScalar();
-
-    //  command.CommandText += " and Project=@Project";
-    //  int projectContributions = (int)(long)command.ExecuteScalar();
-
-    //  return (projectContributions, totalContributions);
-    //}
-       
-
-    //internal static List<(string project, string category, string contribution)> GetContributions(
-    //  string userId)
-    //{
-    //  SQLiteCommand command = new SQLiteCommand(
-    //   "select Project, Category, Contribution from Credits where CreditUserId=@CreditUserId order by Project, Category, Contribution", dbConnection);
-    //  command.Parameters.Add(new SQLiteParameter("@CreditUserId", userId));
-
-    //  List<(string project, string category, string contribution)> contributions = new List<(string project, string category, string contribution)>();
-    //  using(DbDataReader reader = command.ExecuteReader())
-    //  {
-    //    while(reader.Read())
-    //    {
-    //      contributions.Add(((string)reader["Project"], (string)reader["Category"], (string)reader["Contribution"]));
-    //    }
-    //  }
-
-    //  return contributions;
-    //}
 
     internal static UserLevel GetUserLevel(
       string userId)

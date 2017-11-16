@@ -23,7 +23,7 @@ namespace HD
       get
       {
         // TODO this may deadlock
-        return TwitchController.GetChannelInfo().Result.title;
+        return TwitchController.instance.GetChannelInfo().Result.title;
       }
       set
       {
@@ -31,7 +31,7 @@ namespace HD
         obsMessage += value;
         File.WriteAllText("..\\TODO.txt", obsMessage);
 
-        TwitchController.SetTitle(value);
+        TwitchController.instance.SetTitle(value);
       }
     }
     #endregion
@@ -56,7 +56,6 @@ namespace HD
       //dynamicCommandList.Add(new DynamicCommand("!credit", null, UserLevel.Mods, RecordCredits));
       CommandFeatures.instance.Add(new DynamicCommand("!tweet", "!tweet message for Pulse and Twitter (if not too long)", UserLevel.Mods, SendTweetAndPulse));
       CommandFeatures.instance.Add(new DynamicCommand("!title", "!title New Title", UserLevel.Mods, SetTitle));
-      CommandFeatures.instance.Add(new DynamicCommand("!shoutout", "Give shoutout: !shoutout @Username; Create shoutout: !shoutout @Username = New shoutout message", UserLevel.Mods, Shoutout));
       // TODO dynamicCommandList.Add(new DynamicCommand("!setgame", "!setgame gamedev|coding|game name", UserLevel.Mods, SetGame));
 
       //dynamicCommandList.Add(new DynamicCommand("!credit", null, UserLevel.Everyone, DisplayCredits));
@@ -67,12 +66,10 @@ namespace HD
     static void OnGoLive(
       string goLiveMessage)
     {
-      //UnfollowNonStreamers();
-      TwitchController.instance.DownloadFullSubList();
-      //FollowBot();
+      // TODO TwitchController.instance.DownloadFullSubList();
 
-      TwitchController.ExitHost();
-      TwitchController.SendMessage("Welcome back!");
+      TwitchController.instance.ExitHost();
+      TwitchController.instance.SendMessage("Welcome back!");
 
       hasSomeoneSaidSomethingSinceGoingLive = false;
 
@@ -88,7 +85,7 @@ namespace HD
       }
       else
       {
-        TwitchController.SendWhisper(BotSettings.twitch.channelUsername, "Dude, where's the tweet?");
+        TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, "Dude, where's the tweet?");
       }
     }
 
@@ -112,10 +109,10 @@ namespace HD
       }
 
       if (hasSomeoneSaidSomethingSinceGoingLive == false
-        && message.userId != TwitchController.twitchChannelId)
+        && message.userId != TwitchController.instance.twitchChannelId)
       {
         hasSomeoneSaidSomethingSinceGoingLive = true;
-        TwitchController.SendMessage($"hardlyHype");
+        TwitchController.instance.SendMessage($"hardlyHype");
       }
 
       onMessage?.Invoke(message);
@@ -124,10 +121,11 @@ namespace HD
     public static void OnSub(
       string userId,
       string displayName,
+      UserLevel userLevel,
       int tier1To3,
       int months)
     {
-      Message m = new Message(userId, displayName, UserLevelHelpers.Get(userId), null, false, 0);
+      Message m = new Message(userId, displayName, userLevel, null, false, 0);
       string message = $"hardlyHype {displayName}";
 
       switch (tier1To3)
@@ -154,49 +152,7 @@ namespace HD
 
       message += " hardlyHeart";
 
-      TwitchController.SendMessage(message);
-    }
-
-    public static void OnHost(
-      string displayName,
-      int? viewerCount,
-      bool isAutoHost)
-    {
-      // TODO put this back AutoFollow(TwitchController.GetUserId(displayName));
-      if (isAutoHost)
-      {
-        return;
-      }
-      if (viewerCount < 10)
-      { // Hide counts less than 10
-        viewerCount = null;
-      }
-      (string hosterName, string shoutoutMessage) = GetShoutoutMessage(displayName);
-      if (string.IsNullOrWhiteSpace(hosterName))
-      { // I dunno who you are...
-        return;
-      }
-
-      StringBuilder message = new StringBuilder();
-      message.Append("Thanks for the host");
-      if (viewerCount != null)
-      {
-        message.Append(" for ");
-        message.Append(viewerCount.Value);
-        message.Append(" viewers! ");
-      }
-      else
-      {
-        message.Append(". ");
-      }
-      if (shoutoutMessage != null)
-      {
-        message.Append(shoutoutMessage);
-      }
-      message.Append(" twitch.tv/");
-      message.Append(hosterName);
-      message.Append(" hardlyHype hardlyHype");
-      TwitchController.SendMessage(message.ToString());
+      TwitchController.instance.SendMessage(message);
     }
 
     public static void OnJoin(
@@ -204,24 +160,6 @@ namespace HD
     {
       TwitchUser user = new TwitchUser(username);
       onJoin?.Invoke(user);
-    }
-
-    public static void OnHostingAnotherChannel(
-      string channelName)
-    {
-      (string streamerName, string shoutoutMessage) = GetShoutoutMessage(channelName);
-      StringBuilder builder = new StringBuilder();
-      builder.Append("Now hosting ");
-      builder.Append(streamerName);
-      builder.Append(". ");
-      if (shoutoutMessage != null)
-      {
-        builder.Append(shoutoutMessage);
-        builder.Append(" ");
-      }
-      builder.Append("twitch.tv/");
-      builder.Append(streamerName);
-      TwitchController.SendMessage(builder.ToString());
     }
     #endregion
 
@@ -241,18 +179,18 @@ namespace HD
       }
       if (game.Equals("gamedev", StringComparison.InvariantCultureIgnoreCase))
       {
-        TwitchController.SetGame("Creative");
-        TwitchController.SetCommunities("gamedevelopment", "programming", "chill-streams");
+        TwitchController.instance.SetGame("Creative");
+        TwitchController.instance.SetCommunities("gamedevelopment", "programming", "chill-streams");
       }
       else if (game.Equals("coding", StringComparison.InvariantCultureIgnoreCase))
       {
-        TwitchController.SetGame("Creative");
-        TwitchController.SetCommunities("programming", "chill-streams");
+        TwitchController.instance.SetGame("Creative");
+        TwitchController.instance.SetCommunities("programming", "chill-streams");
       }
       else
       {
-        TwitchController.SetGame(game);
-        TwitchController.SetCommunities("chill-streams");
+        TwitchController.instance.SetGame(game);
+        TwitchController.instance.SetCommunities("chill-streams");
       }
 
       SendModReplyWithTitle(message);
@@ -263,13 +201,13 @@ namespace HD
       string userName,
       string message)
     {
-      TwitchController.SendWhisper(userName, message);
+      TwitchController.instance.SendWhisper(userName, message);
     }
 
     public static void SendMessage(
       string message)
     {
-      TwitchController.SendMessage(message);
+      TwitchController.instance.SendMessage(message);
     }
 
     /// <summary>
@@ -351,14 +289,14 @@ namespace HD
     //      }
     //    }
 
-    //    userId = TwitchController.GetUserId(usernameToCredit);
+    //    userId = TwitchController.instance.GetUserId(usernameToCredit);
     //    creditMessage = message.message.GetAfter("=");
     //  }
     //  catch { }
 
     //  if(usernameToCredit == null || userId == null || project == null || category == null || creditMessage == null)
     //  {
-    //    TwitchController.SendWhisper(message.displayName,
+    //    TwitchController.instance.SendWhisper(message.displayName,
     //      $"Fail. Expecting !credit @user pizza art = Very short summary. {Enum.GetNames(typeof(Project)).ToCsv()} / {Enum.GetNames(typeof(Category)).ToCsv()}");
     //    return;
     //  }
@@ -389,7 +327,7 @@ namespace HD
 
     //  builder.Append(" Thanks for everything!");
 
-    //  TwitchController.SendMessage(builder.ToString());
+    //  TwitchController.instance.SendMessage(builder.ToString());
     //}
 
     static void SendTweetAndPulse(
@@ -419,8 +357,8 @@ namespace HD
       }
 
       TwitterController.SendTweet($"{tweet} twitch.tv/HardlyDifficult", isForLiveThread);
-      TwitchController.PostToPulse(tweet);
-      TwitchController.SendWhisper(BotSettings.twitch.channelUsername, $"Tweeted / Pulsed: {tweet}");
+      TwitchController.instance.PostToPulse(tweet);
+      TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, $"Tweeted / Pulsed: {tweet}");
     }
 
     static void SetTitle(
@@ -429,7 +367,7 @@ namespace HD
       string title = message.message.GetAfter(" ");
       if (title != null && title.Length > 3)
       {
-        TwitchController.SetTitle(title);
+        TwitchController.instance.SetTitle(title);
       }
 
       SendModReplyWithTitle(message);
@@ -439,8 +377,8 @@ namespace HD
       Message message)
     {
       Thread.Sleep(1000);
-      (string title, string game) = await TwitchController.GetChannelInfo();
-      string[] communityList = await TwitchController.GetCommunity();
+      (string title, string game) = await TwitchController.instance.GetChannelInfo();
+      string[] communityList = await TwitchController.instance.GetCommunity();
       SendModReply(message.displayName, $"\"{title}\" {game} / {communityList.ToCsv()}");
     }
 
@@ -464,7 +402,7 @@ namespace HD
 
     //static void FollowBot()
     //{
-    //  TwitchController.GetAllFollowers(AutoFollow);
+    //  TwitchController.instance.GetAllFollowers(AutoFollow);
     //}
 
     //static async void AutoFollow(
@@ -472,11 +410,11 @@ namespace HD
     //{
     //  return;
     //  if(SqlManager.HasAutoFollowedBefore(userId) == false
-    //    && await TwitchController.ShouldAutoFollow(userId))
+    //    && await TwitchController.instance.ShouldAutoFollow(userId))
     //  {
-    //    string displayName = TwitchController.GetDisplayName(userId);
+    //    string displayName = TwitchController.instance.GetDisplayName(userId);
     //    SqlManager.StoreUser(userId, displayName, UserLevelHelpers.Get(userId));
-    //    TwitchController.AutoFollow(userId, () =>
+    //    TwitchController.instance.AutoFollow(userId, () =>
     //    {
     //      SqlManager.SetHasAutoFollowed(userId);
     //    });
@@ -485,79 +423,11 @@ namespace HD
 
     //static void UnfollowNonStreamers()
     //{
-    //  TwitchController.UnfollowFollowedNonStreamers();
+    //  TwitchController.instance.UnfollowFollowedNonStreamers();
     //}
     #endregion
 
     #region Private Read API
-    static void Shoutout(
-      Message message)
-    {
-      string usernameToShout = message.message.GetAfter(" ");
-      if (usernameToShout == null)
-      {
-        return;
-      }
-      string newShoutoutMessage = usernameToShout.GetAfter("=");
-      if (string.IsNullOrWhiteSpace(newShoutoutMessage))
-      {
-        newShoutoutMessage = null;
-      }
-      else
-      {
-        newShoutoutMessage = newShoutoutMessage.Trim();
-        usernameToShout = usernameToShout.GetBefore("=");
-      }
-
-      usernameToShout = usernameToShout.Trim();
-      if (usernameToShout.StartsWith("@")
-        && usernameToShout.Length > 1)
-      {
-        usernameToShout = usernameToShout.Substring(1);
-      }
-      if (string.IsNullOrEmpty(usernameToShout))
-      {
-        return;
-      }
-
-      if (newShoutoutMessage != null)
-      {
-        (string streamerName, string streamerId) = TwitchController.GetUserInfo(usernameToShout);
-        if (streamerId != null)
-        {
-          SqlManager.SetShoutoutMessage(streamerId, newShoutoutMessage);
-        }
-      }
-      {
-        (string streamerName, string shoutoutMessage) = GetShoutoutMessage(usernameToShout);
-        if (streamerName == null)
-        { // I don't know who you are
-          return;
-        }
-        if (shoutoutMessage == null)
-        {
-          shoutoutMessage = "Known streamer -> ";
-        }
-        TwitchController.SendMessage($"{shoutoutMessage} twitch.tv/{streamerName}");
-      }
-    }
-
-    private static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
-      string usernameToShout)
-    {
-      (string streamerName, string streamerId) = TwitchController.GetUserInfo(usernameToShout);
-      if (streamerId == null)
-      {
-        return (streamerName, null);
-      }
-      string shoutoutMessage = SqlManager.GetShoutoutMessage(streamerId);
-      if (shoutoutMessage == null)
-      {
-        return (streamerName, null);
-      }
-
-      return (streamerName, shoutoutMessage);
-    }
 
     //static void DisplayCredits(
     //  Message message)
@@ -573,10 +443,10 @@ namespace HD
     //    username = username.Substring(1);
     //  }
 
-    //  string userId = TwitchController.GetUserId(username);
+    //  string userId = TwitchController.instance.GetUserId(username);
     //  if(userId == null)
     //  {
-    //    TwitchController.SendWhisper(message.displayName, $"I don't know who {username} is");
+    //    TwitchController.instance.SendWhisper(message.displayName, $"I don't know who {username} is");
     //    return;
     //  }
 
@@ -584,7 +454,7 @@ namespace HD
 
     //  if(contributions == null || contributions.Count == 0)
     //  {
-    //    TwitchController.SendWhisper(message.displayName, $"I don't have any credits recorded for {username}");
+    //    TwitchController.instance.SendWhisper(message.displayName, $"I don't have any credits recorded for {username}");
     //    return;
     //  }
 
@@ -621,11 +491,11 @@ namespace HD
 
     //  if(message.userLevel < UserLevel.Mods || message.isWhisper)
     //  {
-    //    TwitchController.SendWhisper(message.displayName, builder.ToString());
+    //    TwitchController.instance.SendWhisper(message.displayName, builder.ToString());
     //  }
     //  else
     //  {
-    //    TwitchController.SendMessage(builder.ToString());
+    //    TwitchController.instance.SendMessage(builder.ToString());
     //  }
     //}
 
@@ -638,9 +508,9 @@ namespace HD
     {
       if (displayName.Equals(BotSettings.twitch.channelUsername, StringComparison.InvariantCultureIgnoreCase) == false)
       {
-        TwitchController.SendWhisper(BotSettings.twitch.channelUsername, $"{displayName} -> {message}");
+        TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, $"{displayName} -> {message}");
       }
-      TwitchController.SendWhisper(displayName, message);
+      TwitchController.instance.SendWhisper(displayName, message);
     }
 
     static void GetSubCount(
@@ -650,7 +520,7 @@ namespace HD
       int currentSubCount = SqlManager.GetTotalSubCount();
       int remaining = nextMilestone - currentSubCount;
 
-      TwitchController.SendMessage($"We have {currentSubCount} subs!  Only {remaining} till our next emote.");
+      TwitchController.instance.SendMessage($"We have {currentSubCount} subs!  Only {remaining} till our next emote.");
     }
     #endregion
   }

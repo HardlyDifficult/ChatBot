@@ -44,7 +44,7 @@ namespace HD
     public static UserLevel Get(
       string userId)
     {
-      if (userId == TwitchController.twitchChannelId)
+      if (userId == TwitchController.instance.twitchChannelId)
       {
         return UserLevel.Owner;
       }
@@ -71,9 +71,9 @@ namespace HD
     {
       try
       {
-        return (await TwitchController.twitchApi.Users.v5.CheckUserFollowsByChannelAsync(
+        return (await TwitchController.instance.twitchApi.Users.v5.CheckUserFollowsByChannelAsync(
           userId.ToString(),
-          TwitchController.twitchChannelId.ToString())) != null;
+          TwitchController.instance.twitchChannelId.ToString())) != null;
       }
       catch
       {
@@ -86,8 +86,8 @@ namespace HD
     {
       try
       {
-        return TwitchController.twitchApi.Users.v5.CheckUserSubscriptionByChannelAsync(userId.ToString(),
-          TwitchController.twitchChannelId.ToString()).Result != null;
+        return TwitchController.instance.twitchApi.Users.v5.CheckUserSubscriptionByChannelAsync(userId.ToString(),
+          TwitchController.instance.twitchChannelId.ToString()).Result != null;
       }
       catch
       {
@@ -135,7 +135,7 @@ namespace HD
           return UserLevelHelpers.IsMod(userId);
         default:
         case UserLevel.Owner:
-          return userId == TwitchController.twitchChannelId;
+          return userId == TwitchController.instance.twitchChannelId;
       }
     }
 

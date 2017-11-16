@@ -114,7 +114,7 @@ namespace HD
     void OnHelp(
       Message message)
     {
-      if (UserLevelHelpers.Get(message.userId) >= UserLevel.Mods)
+      if (message.userLevel >= UserLevel.Mods)
       {
         SendModHelp(message);
       }
@@ -183,12 +183,12 @@ namespace HD
 
         CooldownTable.instance.SetCooldown(commandName, timeout);
 
-        TwitchController.SendWhisper(message.displayName,
+        TwitchController.instance.SendWhisper(message.displayName,
           $"Command: {commandName} {userLevel} {timeout} = {commandText}");
       }
       else
       {
-        TwitchController.SendWhisper(message.displayName, "Failed to create command..");
+        TwitchController.instance.SendWhisper(message.displayName, "Failed to create command..");
       }
     }
 
@@ -219,11 +219,11 @@ namespace HD
 
       if (CommandsTable.instance.DeleteCommand(commandToDelete))
       {
-        TwitchController.SendWhisper(message.displayName, $"Deleted {commandToDelete}");
+        TwitchController.instance.SendWhisper(message.displayName, $"Deleted {commandToDelete}");
       }
       else
       {
-        TwitchController.SendWhisper(message.displayName, "Failed.. to delete a command, !delete !oldcommand");
+        TwitchController.instance.SendWhisper(message.displayName, "Failed.. to delete a command, !delete !oldcommand");
       }
     }
     #endregion
@@ -239,7 +239,7 @@ namespace HD
       Message message)
     {
       string commandList = GetCommandListMessage(message.userLevel);
-      TwitchController.SendWhisper(message.displayName, commandList);
+      TwitchController.instance.SendWhisper(message.displayName, commandList);
     }
 
     public static void WhisperCommandAliases(
@@ -262,7 +262,7 @@ namespace HD
         }
         response.Append(aliasList[i]);
       }
-      TwitchController.SendWhisper(message.displayName, response.ToString());
+      TwitchController.instance.SendWhisper(message.displayName, response.ToString());
     }
 
     public void SendModHelp(
@@ -276,7 +276,7 @@ namespace HD
         {
           if (dynamicCommand.helpMessage != null)
           {
-            TwitchController.SendWhisper(message.displayName, dynamicCommand.helpMessage);
+            TwitchController.instance.SendWhisper(message.displayName, dynamicCommand.helpMessage);
             return;
           }
         }
@@ -299,7 +299,7 @@ namespace HD
           builder.Append(dynamicCommand.command);
         }
       }
-      TwitchController.SendWhisper(message.displayName, builder.ToString());
+      TwitchController.instance.SendWhisper(message.displayName, builder.ToString());
     }
     #endregion
 
@@ -422,7 +422,7 @@ namespace HD
 
       if (commandName == null || commandOptions == null || commandText == null)
       {
-        TwitchController.SendWhisper(message.displayName, "Create new commands like so: !commands !newcommand Mods 120 = Command text. ...To Delete, !delete !oldcommand");
+        TwitchController.instance.SendWhisper(message.displayName, "Create new commands like so: !commands !newcommand Mods 120 = Command text. ...To Delete, !delete !oldcommand");
         return false;
       }
 

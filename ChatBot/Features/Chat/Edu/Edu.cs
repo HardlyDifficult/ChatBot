@@ -81,11 +81,11 @@ namespace HD
 
       //if (SqlManager.CooldownIsReadyForIntKey(message.userLevel, dbKeyPennies))
       //{
-      //  TwitchController.SendMessage(eduMessage);
+      //  TwitchController.instance.SendMessage(eduMessage);
       //}
       //else
       //{
-      //  TwitchController.SendWhisper(message.displayName, eduMessage);
+      //  TwitchController.instance.SendWhisper(message.displayName, eduMessage);
       //}
     }
 
