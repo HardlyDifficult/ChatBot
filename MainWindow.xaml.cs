@@ -133,5 +133,12 @@ namespace HD
       if (new SettingsWindow().ShowDialog() == false)
         Environment.Exit(0);
     }
+
+    void Window_LostFocus(
+      object sender, 
+      RoutedEventArgs e)
+    {
+      BotLogic.streamTitle = Title.Text;
+    }
   }
 }

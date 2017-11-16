@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ChatBot"
         mc:Ignorable="d"
-        Title="SettingsWindow" WindowStartupLocation="CenterScreen" Closing="SettingsWindow_OnClosing" Height="300" Width="400">
+        Title="SettingsWindow" WindowStartupLocation="CenterScreen" Closing="SettingsWindow_OnClosing" Height="300" Width="546.076">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
