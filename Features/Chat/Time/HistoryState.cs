@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace HD.Features.Chat.Time
+namespace HD
 {
-    class HistoryState
-    {
-    }
+  public enum HistoryState
+  {
+    Offline, Live
+  }
 }

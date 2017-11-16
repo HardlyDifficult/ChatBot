@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:HD"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="Bot" Height="190" Width="530" Loaded="Window_Loaded" Closing="Window_Closing" Background="Black" Topmost="True" WindowStyle="ToolWindow">
+        Title="Bot" Height="190" Width="530" Loaded="Window_Loaded" Closing="Window_Closing" Background="Black" Topmost="True" WindowStyle="ToolWindow" LostFocus="Window_LostFocus">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="60"/>
@@ -16,7 +16,7 @@
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="40"/>
         </Grid.ColumnDefinitions>
-        <TextBox Grid.Row="0" x:Name="Title" Margin="5" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" Loaded="Title_Loaded" LostFocus="Title_LostFocus" Text="this is a test to see what a long title will look like in this field - perfect!"/>
+        <TextBox Grid.Row="0" x:Name="TitleText" Margin="5" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" Loaded="Title_Loaded" LostFocus="Title_LostFocus" Text="this is a test to see what a long title will look like in this field - perfect!"/>
         <TextBox Grid.Row="1" Grid.ColumnSpan="2" x:Name="Message" Margin="5" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" KeyDown="Message_KeyDown" PreviewKeyDown="Message_PreviewKeyDown"/>
 
         <Button fa:Awesome.Content="Cog" 

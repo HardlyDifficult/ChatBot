@@ -2,5 +2,6 @@
 {
   public interface IBotFeature
   {
+    void Init();
   }
 }

@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using NodaTime;
 
 namespace HD
 {
@@ -13,14 +10,9 @@ namespace HD
   ///  - 'KeyIntValue' ETA value and cooldown
   ///  - 'KeyStringValue' ETA message
   /// </summary>
-  public static class ETA
+  public static class ETA // TODO IBotFeature
   {
     #region Data
-    enum HistoryState
-    {
-      Offline, Live
-    }
-
     public static event Action<string> onGoLive;
     public static event Action<string> onGoOffline;
 
@@ -41,15 +33,6 @@ namespace HD
     #endregion
 
     #region Properties
-    public static bool isLive
-    {
-      get
-      {
-        HistoryState mostRecentHistoryState = (HistoryState)SqlManager.GetMostRecentStreamHistory();
-        return mostRecentHistoryState == HistoryState.Live;
-      }
-    }
-
     public static TimeSpan? timeTillNextStream
     {
       get
@@ -67,7 +50,7 @@ namespace HD
     {
       get
       {
-        if (isLive)
+        if (StreamHistoryTable.instance.isLive)
         {
           return null;
         }
@@ -165,7 +148,7 @@ namespace HD
       ETA.etaMessage = etaMessage;
 
       bool includeGoodbye;
-      if (isLive)
+      if (StreamHistoryTable.instance.isLive)
       {
         OnGoOffline(etaMessage);
         includeGoodbye = true;
@@ -214,7 +197,7 @@ namespace HD
     static void RecordHistory(
       HistoryState state)
     {
-      SqlManager.AddStreamHistory((long)state, DateTime.Now.Ticks);
+      StreamHistoryTable.instance.AddStreamHistory(state);
     }
 
     static (DateTime? eta, bool isCooldownReady) GetEta(
@@ -235,7 +218,7 @@ namespace HD
       Message message,
       bool includeGoodbye)
     {
-      if (isLive || hasCooldownPassedSinceLastPost == false && message == null)
+      if (StreamHistoryTable.instance.isLive || hasCooldownPassedSinceLastPost == false && message == null)
       {
         return;
       }

@@ -118,27 +118,29 @@ namespace HD
       object sender,
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = Title.Text = BotLogic.streamTitle; // I'm not crazy, promise ;)
+      BotLogic.streamTitle = TitleText.Text = BotLogic.streamTitle; // I'm not crazy, promise ;)
     }
 
     void Title_LostFocus(
       object sender,
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = Title.Text;
+      BotLogic.streamTitle = TitleText.Text;
     }
 
     private void OpenSettings_OnClick(object sender, RoutedEventArgs e)
     {
       if (new SettingsWindow().ShowDialog() == false)
+      {
         Environment.Exit(0);
+      }
     }
 
     void Window_LostFocus(
       object sender, 
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = Title.Text;
+      BotLogic.streamTitle = TitleText.Text;
     }
   }
 }

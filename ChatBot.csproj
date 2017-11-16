@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A55B7464-4597-410F-9E23-742BD03CE750}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ChatBot</RootNamespace>
+    <RootNamespace>HD</RootNamespace>
     <AssemblyName>ChatBot</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -89,6 +89,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Features\Chat\Time\CooldownTable.cs" />
+    <Compile Include="Features\Chat\Time\HistoryState.cs" />
+    <Compile Include="Features\Chat\Time\IBotFeature.cs" />
+    <Compile Include="Features\Chat\Time\Uptime.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -113,7 +117,6 @@
     <Compile Include="Data\Sql\Shared\TwitchUser.cs" />
     <Compile Include="Features\Chat\Edu.cs" />
     <Compile Include="Features\Chat\Time\ETA.cs" />
-    <Compile Include="Features\Chat\Time\UptimeTable.cs" />
     <Compile Include="Features\Overlay\KeyPressMonitor.cs" />
     <Compile Include="Features\Overlay\KeystrokeInfo.cs" />
     <Compile Include="Backend\Throttle.cs" />

@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS `{tableName}` (
       SqlManager.ExecuteNonQuery($@"
 REPLACE INTO {SchemaTable._tableName} ({tableField}, {versionField}) VALUES(@table, @version)
         ",
-        new SQLiteParameter("@table", tableName),
-        new SQLiteParameter("@version", version));
+        ("@table", tableName),
+        ("@version", version));
     }
 
     static long GetCurrentDbVersion(

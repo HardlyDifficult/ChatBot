@@ -39,7 +39,22 @@ namespace HD
     #region Init
     static BotLogic()
     {
+      SchemaTable.UpdateTables();
+      List<IBotFeature> featureList = ReflectionHelpers.CreateOneOfEach<IBotFeature>();
+      for (int i = 0; i < featureList.Count; i++)
+      {
+        featureList[i].Init();
+      }
+
+
+
+
+
+
       ETA.onGoLive += OnGoLive;
+
+
+
       // TODO broken dynamicCommandList.Add(new DynamicCommand("!subcount", null, UserLevel.Everyone, GetSubCount));
 
       dynamicCommandList.Add(new DynamicCommand("!edu", "TODO", UserLevel.Everyone, Edu.OnCommand));
@@ -55,7 +70,6 @@ namespace HD
       dynamicCommandList.Add(new DynamicCommand("!help", "Hi!", UserLevel.Everyone, Help));
 
       dynamicCommandList.Add(new DynamicCommand("!commands", null, UserLevel.Everyone, SendCommandList));
-      dynamicCommandList.Add(new DynamicCommand("!uptime", null, UserLevel.Everyone, SendUptime));
       //dynamicCommandList.Add(new DynamicCommand("!credit", null, UserLevel.Everyone, DisplayCredits));
     }
     #endregion
@@ -221,6 +235,12 @@ namespace HD
     }
     #endregion
 
+    public static void Add(
+      DynamicCommand dynamicCommand)
+    {
+      dynamicCommandList.Add(dynamicCommand);
+    }
+
     //public static void OnFollow(
     //  string userId)
     //{
@@ -371,7 +391,6 @@ namespace HD
       {
         shouldWhisper = false;
       }
-
 
       if (shouldWhisper)
       {
@@ -755,37 +774,6 @@ namespace HD
       return (streamerName, shoutoutMessage);
     }
 
-    static void SendUptime(
-      Message message)
-    {
-      const string key = "Uptime";
-      (long data, bool isCooldownReady) = SqlManager.GetLongValueIfReady(message.userLevel, key);
-      //  if(data != 0)
-      {
-        TimeSpan? uptime = TwitchController.streamUptime;
-
-        if (uptime != null)
-        {
-          StringBuilder builder = new StringBuilder();
-          builder.Append("Uptime: ");
-          builder.Append(uptime.Value.ToShortTimeString());
-          TimeSpan previousUptimeToday = SqlManager.GetPreviousUptimeToday();
-          if (previousUptimeToday.Ticks > 0)
-          {
-            TimeSpan totalUptimeToday = previousUptimeToday + uptime.Value;
-            builder.Append(". Total today: ");
-            builder.Append(totalUptimeToday.ToShortTimeString());
-          }
-          builder.Append(". Current time in Seattle: ");
-          builder.Append(DateTime.Now.ToShortTimeString());
-
-          if (SendMessageOrWhisper(message, builder.ToString(), isCooldownReady))
-          {
-            SqlManager.SetLastSentForKey(key);
-          }
-        }
-      }
-    }
 
     //static void DisplayCredits(
     //  Message message)

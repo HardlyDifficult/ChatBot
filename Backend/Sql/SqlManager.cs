@@ -17,12 +17,6 @@ namespace HD
   public static class SqlManager
   {
     #region Data
-    const long sqlVersion = 2;
-
-    const string streamHistoryTable = "StreamHistory";
-    const string streamHistoryStateField = "State";
-    const string streamHistoryTimeField = "TimeInTicks";
-
     static readonly SQLiteConnection dbConnection;
     #endregion
 
@@ -31,27 +25,10 @@ namespace HD
     {
       dbConnection = new SQLiteConnection("Data Source=../MyDatabase.sqlite;Version=3;");
       dbConnection.Open();
-
-      SchemaTable.UpdateTables();
     }
     #endregion
 
     #region Write API
-    public static void AddStreamHistory(
-      long state,
-      long timeInTicks)
-    {
-      SQLiteCommand sql = new SQLiteCommand($@"
-insert into {streamHistoryTable}({streamHistoryTimeField}, {streamHistoryStateField}) 
-values(@{streamHistoryTimeField}, @{streamHistoryStateField})
-        ", dbConnection);
-
-      sql.Parameters.Add(new SQLiteParameter($"@{streamHistoryTimeField}", timeInTicks));
-      sql.Parameters.Add(new SQLiteParameter($"@{streamHistoryStateField}", state));
-      sql.ExecuteNonQuery();
-    }
-
-
     //public static void AddCredits(
     //  string creditUserId,
     //  string reporterUserId,
@@ -302,16 +279,23 @@ values(@{streamHistoryTimeField}, @{streamHistoryStateField})
 
     public static void ExecuteNonQuery(
       string sql,
-      params SQLiteParameter[] parameters)
+      params (string name, object value)[] parameters)
     {
-      SQLiteCommand command = new SQLiteCommand(sql, dbConnection);
-
-      for (int i = 0; i < parameters.Length; i++)
-      {
-        command.Parameters.Add(parameters[i]);
-      }
+      SQLiteCommand command = CreateCommand(sql, parameters);
 
       command.ExecuteNonQuery();
+    }
+
+    private static SQLiteCommand CreateCommand(string sql, (string name, object value)[] parameters)
+    {
+      SQLiteCommand command = new SQLiteCommand(sql, dbConnection);
+      for (int i = 0; i < parameters.Length; i++)
+      {
+        (string name, object value) = parameters[i];
+        command.Parameters.Add(new SQLiteParameter(name, value));
+      }
+
+      return command;
     }
     #endregion
 
@@ -354,16 +338,13 @@ values(@{streamHistoryTimeField}, @{streamHistoryStateField})
     #endregion
 
     #region Read API
-    public static long GetMostRecentStreamHistory()
+    public static DbDataReader GetReader(
+      string sql, 
+      params (string key, object value)[] parameters)
     {
+      SQLiteCommand command = CreateCommand(sql, parameters);
 
-      object result = GetScalar(table: streamHistoryTable, field: streamHistoryStateField, orderByField: streamHistoryTimeField, descendingSort: true);
-      if (result == null)
-      {
-        return 0;
-      }
-
-      return (long)result;
+      return command.ExecuteReader();
     }
 
     public static bool TableExists(
@@ -406,21 +387,6 @@ values(@{streamHistoryTimeField}, @{streamHistoryStateField})
 
       SQLiteCommand command = new SQLiteCommand(builder.ToString(), dbConnection);
       return command.ExecuteScalar();
-    }
-
-    public static TimeSpan GetPreviousUptimeToday()
-    {
-      // TODO add start time, don't trust twitch api uptime... 
-      DateTime now = DateTime.Now;
-      SQLiteCommand command = new SQLiteCommand("select sum(TimeStreamedInTicks) from Uptime where StreamEndtimeInTicks>=@ThisMorning and StreamEndtimeInTicks<=@Tonight", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@ThisMorning", now.Date.Ticks));
-      command.Parameters.Add(new SQLiteParameter("@Tonight", (now.Date + TimeSpan.FromDays(1)).Ticks));
-      try
-      {
-        return new TimeSpan((long)command.ExecuteScalar());
-      }
-      catch { }
-      return TimeSpan.Zero;
     }
 
     internal static bool GetIsReady(
@@ -525,22 +491,6 @@ values(@{streamHistoryTimeField}, @{streamHistoryStateField})
 
     //  return (projectContributions, totalContributions);
     //}
-
-    internal static void SetUptime(
-      DateTime streamEnded,
-      TimeSpan? streamLength)
-    {
-      if (streamLength == null)
-      {
-        return;
-      }
-
-      SQLiteCommand command = new SQLiteCommand(
-        "insert into Uptime (StreamEndtimeInTicks, TimeStreamedInTicks) values (@StreamEndtimeInTicks, @TimeStreamedInTicks)", dbConnection);
-      command.Parameters.Add(new SQLiteParameter("@StreamEndtimeInTicks", streamEnded.Ticks));
-      command.Parameters.Add(new SQLiteParameter("@TimeStreamedInTicks", streamLength.Value.Ticks));
-      command.ExecuteNonQuery();
-    }
 
     static bool CooldownIsReady(
      UserLevel userLevel,
