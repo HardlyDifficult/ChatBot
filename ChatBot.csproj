@@ -92,10 +92,10 @@
     <Compile Include="Data\Sql\Tables\KeyLongValueTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyStringValueTable.cs" />
     <Compile Include="Data\Sql\Tables\KeyValueTable.cs" />
-    <Compile Include="Features\Chat\Time\Data\CooldownTable.cs" />
+    <Compile Include="Data\Sql\Tables\CooldownTable.cs" />
     <Compile Include="Features\Chat\Time\Data\HistoryState.cs" />
     <Compile Include="Features\Chat\IBotFeature.cs" />
-    <Compile Include="SettingsWindow.xaml.cs">
+    <Compile Include="UI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Systems\BotLogic.cs" />
@@ -126,7 +126,7 @@
     <Compile Include="Systems\Twitch\TwitchFollows.cs" />
     <Compile Include="Systems\Twitter\TwitterController.cs" />
     <Compile Include="Backend\UserLevel.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="UI\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -135,11 +135,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Features\Chat\Commands\DynamicCommand.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="UI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="SettingsWindow.xaml">
+    <Page Include="UI\SettingsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
