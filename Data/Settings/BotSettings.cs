@@ -50,6 +50,13 @@ namespace HD
         return instance._twitter;
       }
     }
+
+    public static bool IsConfigured => ((twitch.botOauth 
+                                         ?? twitch.botUsername 
+                                         ?? twitch.channelOauth 
+                                         ?? twitch.channelUsername 
+                                         ?? twitch.clientId) != null);
+
     #endregion
 
     #region Public Write

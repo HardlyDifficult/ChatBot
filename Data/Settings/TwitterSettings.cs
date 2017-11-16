@@ -34,7 +34,6 @@ namespace HD
       set
       {
         _consumerKey = value;
-        BotSettings.Save();
       }
     }
 
@@ -47,7 +46,6 @@ namespace HD
       set
       {
         _consumerSecret = value;
-        BotSettings.Save();
       }
     }
 
@@ -60,7 +58,6 @@ namespace HD
       set
       {
         _accessToken = value;
-        BotSettings.Save();
       }
     }
 
@@ -73,7 +70,6 @@ namespace HD
       set
       {
         _accessTokenSecret = value;
-        BotSettings.Save();
       }
     }
     #endregion

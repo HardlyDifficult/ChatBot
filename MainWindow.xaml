@@ -4,11 +4,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HD"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="Bot" Height="191.673" Width="530.634" Loaded="Window_Loaded" Closing="Window_Closing" Background="Black" Topmost="True" WindowStyle="ToolWindow">
+        Title="Bot" Height="190" Width="530" Loaded="Window_Loaded" Closing="Window_Closing" Background="Black" Topmost="True" WindowStyle="ToolWindow">
     <Grid>
-        <TextBox x:Name="Message" Margin="10,52,10,10" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" KeyDown="Message_KeyDown" PreviewKeyDown="Message_PreviewKeyDown"/>
-        <TextBox x:Name="Title" Margin="10,10,10,115" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" Loaded="Title_Loaded" LostFocus="Title_LostFocus"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="40"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Row="0" x:Name="Title" Margin="5" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" Loaded="Title_Loaded" LostFocus="Title_LostFocus"/>
+        <TextBox Grid.Row="1" Grid.ColumnSpan="2" x:Name="Message" Margin="5" TextWrapping="Wrap" FontSize="18" FontFamily="Verdana" Background="Black" Foreground="White" SelectionBrush="#FFE1EEFB" KeyDown="Message_KeyDown" PreviewKeyDown="Message_PreviewKeyDown"/>
 
+        <Button fa:Awesome.Content="Cog" 
+                x:Name="OpenSettings" 
+                Grid.Row="0" 
+                Margin="5"
+                BorderThickness="0"
+                Foreground="White"
+                Background="Black"
+                Grid.Column="1" 
+                Click="OpenSettings_OnClick"
+                TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"/>
     </Grid>
 </Window>
