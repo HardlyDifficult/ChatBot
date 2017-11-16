@@ -47,6 +47,8 @@ namespace HD
 
     private void SaveSettings()
     {
+      // Save twitter anyways, since there is no validation yet.
+      SaveTwitter();
       if (CheckSettings() == false)
       {
         _settingsSaved = false;
@@ -59,7 +61,6 @@ namespace HD
       }
 
       SaveTwitch();
-      SaveTwitter();
       _settingsSaved = true;
 
       DialogResult = _settingsSaved;
