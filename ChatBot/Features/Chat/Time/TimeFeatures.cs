@@ -142,7 +142,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     void OnGoLive(
       string goLiveMessage)
     {
-      StreamHistoryTable.instance.AddStreamHistory(HistoryState.Live);
+      StreamHistoryTable.instance.AddStreamHistory(HistoryState.Live, 0);
 
       // TODO TwitchController.instance.DownloadFullSubList();
       TwitchController.instance.ExitHost();
@@ -154,7 +154,8 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     void OnGoOffline(
       string etaMessage)
     {
-      StreamHistoryTable.instance.AddStreamHistory(HistoryState.Offline);
+      StreamHistoryTable.instance.AddStreamHistory(HistoryState.Offline, 0);
+
       onGoOffline?.Invoke(etaMessage);
     }
     #endregion

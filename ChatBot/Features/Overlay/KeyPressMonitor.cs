@@ -49,7 +49,7 @@ namespace HD
     {
       System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
       dispatcherTimer.Tick += OnTick;
-      dispatcherTimer.Interval = new System.TimeSpan(5);
+      dispatcherTimer.Interval = new TimeSpan(0);
       dispatcherTimer.Start();
     }
     #endregion
@@ -131,7 +131,7 @@ namespace HD
 
         CheckKeys(standaloneKeysToCheck, keysPressed, specialKeysDown);
 
-        if (specialDown)
+        //if (specialDown)
         {
           CheckKeys(keysToCheck, keysPressed, specialKeysDown);
         }

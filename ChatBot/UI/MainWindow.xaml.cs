@@ -7,9 +7,12 @@ namespace HD
 {
   public partial class MainWindow : Window
   {
+    public static MainWindow instance;
+
     #region Init
     public MainWindow()
     {
+      instance = this;
       InitializeComponent();
 
       new KeyPressMonitor();

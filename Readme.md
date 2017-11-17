@@ -21,21 +21,41 @@
 
 ```!help !command```
 
+Use the !command to create new commands for your channel.  e.g. !social to drop a link to your Twitter.
+
+Note that the "!" is just a style convention Twitch uses, it is not required.
+
+There is an optional cooldown.  If a command is issued too quickly, the response is whispered instead of posted in chat again.  Mods bypass the cooldown period.
+
 #### Aliases
 
 ```!help !alias```
+
+Aliases allow you to have alternate words for the same command.  e.g. !twitter can be an alias of !social so that either works.
+
+FYI the command cooldown is per command and not per alias.
 
 #### Time
 
 ```!help !eta```
 
+Counts down till the next stream.
+
+The ETA (and optional message) is auto posted anytime someone new enters the chatroom while you are offline.  (FYI we do not mention users by name).
+
 ```!help !live``` 
 
-The message included when going live is posted to Twitter (with a link to the channel), as a reply to a previous conversion.
+Issues an unhost and posts a message to chat.
+
+If you include a note when going live it is posted to Twitter (with a link to the channel), as a reply to a previous conversion.
 
 ```!uptime```
 
+Tracks uptime for the stream (and total for the day). 
+
 #### Channel Info
+
+Check or set the stream's title and/or game. 
 
 ```!help !title```
 
@@ -51,7 +71,9 @@ The message included when going live is posted to Twitter (with a link to the ch
 
 ```!help !shoutout```
 
-Creates a custom message for shouting out another streamer. The bot will auto shoutout someone who hosted us or the person we are hosting.
+Creates a custom message for shouting out another streamer. 
+
+The bot will auto shoutout someone who hosted us or the person we are hosting.
 
 ### Events
 

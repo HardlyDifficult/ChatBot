@@ -54,6 +54,8 @@
     <Compile Include="Features\Chat\Subs\SubFeatures.cs" />
     <Compile Include="Features\Chat\Time\Data\HistoryState.cs" />
     <Compile Include="Features\Chat\IBotFeature.cs" />
+    <Compile Include="Features\Overlay\KeyboardHook.cs" />
+    <Compile Include="Features\Overlay\KeystrokeCounter.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>

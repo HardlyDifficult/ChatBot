@@ -10,14 +10,17 @@ namespace HD
     #region Data
     public static StreamHistoryTable instance;
 
-    const string stateField = "State";
-    const string timeField = "TimeInTicks";
+    const string 
+      stateField = "State",
+      timeField = "TimeInTicks",
+      keystrokeCountField = "KeystrokeCount";
+
 
     long ITableMigrator.currentVersion
     {
       get
       {
-        return 0;
+        return 1;
       }
     }
 
@@ -59,6 +62,11 @@ CREATE TABLE IF NOT EXISTS `{tableName}` (
   `TimeInTicks` INTEGER NOT NULL, 
   `State` INTEGER NOT NULL );
           ";
+        case 1:
+          return $@"
+ALTER TABLE {tableName}
+ADD COLUMN {keystrokeCountField} INTEGER DEFAULT 0 NOT NULL;
+            ";
         default:
           return null;
       }
@@ -70,7 +78,8 @@ CREATE TABLE IF NOT EXISTS `{tableName}` (
     /// Returns true if history was recorded (ignored if state did not change).
     /// </summary>
     public bool AddStreamHistory(
-      HistoryState historyState)
+      HistoryState historyState,
+      int keystrokeCountSinceLastEvent)
     {
       if (GetLastState() == historyState)
       {
@@ -78,11 +87,12 @@ CREATE TABLE IF NOT EXISTS `{tableName}` (
       }
 
       SqlManager.ExecuteNonQuery($@"
-INSERT INTO {tableName} ({timeField}, {stateField}) 
-VALUES(@{timeField}, @{stateField})
+INSERT INTO {tableName} ({timeField}, {stateField}, {keystrokeCountField}) 
+VALUES(@{timeField}, @{stateField}, @{keystrokeCountField})
         ",
         ($"@{timeField}", DateTime.Now.Ticks),
-        ($"@{stateField}", (long)historyState));
+        ($"@{stateField}", (long)historyState),
+        ($"@{keystrokeCountField}", keystrokeCountSinceLastEvent));
 
       return true;
     }
@@ -140,7 +150,7 @@ ORDER BY {timeField} DESC
       TimeSpan uptime = new TimeSpan();
 
       string sql = $@"
-SELECT * 
+SELECT {timeField}, {stateField}
 FROM {tableName} 
 WHERE {timeField} > @{timeField}
 ORDER BY {timeField} Desc
