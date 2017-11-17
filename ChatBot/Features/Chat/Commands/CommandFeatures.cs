@@ -249,6 +249,12 @@ Delete alias(es): !alias delete !aliasName
         }
       }
     }
+
+    public void ExecuteCommandFromAdmin(
+      string commandOrAlias)
+    {
+      OnMessage(new Message(TwitchController.instance.twitchChannel, commandOrAlias, false, 0));
+    }
     #endregion
 
     #region Read

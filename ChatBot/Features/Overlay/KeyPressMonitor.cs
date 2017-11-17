@@ -49,7 +49,7 @@ namespace HD
     {
       System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
       dispatcherTimer.Tick += OnTick;
-      dispatcherTimer.Interval = new TimeSpan(0);
+      dispatcherTimer.Interval = new TimeSpan(50);
       dispatcherTimer.Start();
     }
     #endregion

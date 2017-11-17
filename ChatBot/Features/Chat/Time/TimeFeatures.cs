@@ -21,6 +21,8 @@ namespace HD
     public event Action<string> onGoLive;
 
     public event Action<string> onGoOffline;
+
+    bool includeGoodbye = true;
     #endregion
 
     #region Properties
@@ -133,7 +135,6 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     {
       ShowEta(
         message: null,
-        includeGoodbye: false, 
         canSwitchCommandIfOffline: false);
     }
 
@@ -153,6 +154,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       string etaMessage)
     {
       StreamHistoryTable.instance.AddStreamHistory(HistoryState.Offline, 0);
+      includeGoodbye = true;
 
       onGoOffline?.Invoke(etaMessage);
     }
@@ -172,7 +174,6 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     {
       ShowEta(
         message, 
-        includeGoodbye: false,
         canSwitchCommandIfOffline: true); 
     }
 
@@ -211,7 +212,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       { // Offline
         if(canSwitchCommandIfOffline)
         {
-          ShowEta(message, includeGoodbye: false, canSwitchCommandIfOffline: false);
+          ShowEta(message, canSwitchCommandIfOffline: false);
         }
         return;
       }
@@ -240,7 +241,6 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     #region Private Write
     void ShowEta(
       Message message,
-      bool includeGoodbye,
       bool canSwitchCommandIfOffline)
     {
       if (StreamHistoryTable.instance.isLive || CooldownTable.instance.IsReady(etaKey) == false && message == null)
@@ -261,6 +261,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
         if (includeGoodbye)
         {
           stringBuilder.Append("Cya next time.. ");
+          includeGoodbye = false;
         }
 
         TimeSpan timeTillNextStream = this.timeTillNextStream.Value;
@@ -293,12 +294,17 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     {
       bool wasOffline = StreamHistoryTable.instance.isLive == false;
 
+      if(wasOffline == false)
+      {
+        CommandFeatures.instance.ExecuteCommandFromAdmin("!uptime");
+        CommandFeatures.instance.ExecuteCommandFromAdmin("#sellout");
+      }
+
       this.nextStream = nextStreamTime;
       this.etaMessage = etaMessage;
 
       ShowEta(
         message,
-        includeGoodbye: wasOffline == false,
         canSwitchCommandIfOffline: false);
 
       if (wasOffline == false)
