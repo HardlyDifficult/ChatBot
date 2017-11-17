@@ -12,6 +12,7 @@ using TwitchLib.Models.API.v5.Channels;
 using TwitchLib.Models.API.v5.Users;
 using TwitchLib.Models.API.v5.Communities;
 using TwitchLib.Interfaces;
+using TwitchLib.Models.API.v5.Search;
 
 namespace HD
 {
@@ -245,6 +246,14 @@ namespace HD
       { // No change
         return;
       }
+
+      SearchGames searchResults = await twitchApi.Search.v5.SearchGamesAsync(gameName);
+      if(searchResults == null || searchResults.Games.Length == 0)
+      {
+        return;
+      }
+
+      gameName = searchResults.Games[0].Name;
       
       await UpdateChanelInfo(originalTitle, gameName);
     }
@@ -276,7 +285,7 @@ namespace HD
     }
 
     /// <summary>
-    /// TODO test - does this work with multiple communities?
+    /// TODO set communities is not working...?
     /// </summary>
     public async void SetCommunities(
       params string[] communityNameList)
@@ -287,8 +296,8 @@ namespace HD
         Community community = await twitchApi.Communities.v5.GetCommunityByNameAsync(communityNameList[i]);
         communityIdList.Add(community.Id);
       }
-      await twitchApi.Channels.v5.SetChannelCommunitiesAsync(twitchChannel.userId, communityIdList,
-        authToken: BotSettings.twitch.channelOauth);
+      
+      await twitchApi.Channels.v5.SetChannelCommunitiesAsync(twitchChannel.userId, communityIdList);
     }
 
 

@@ -33,7 +33,7 @@ Set title: !title New Title
         command: "!setgame",
         helpMessage: @"
 View current info: !title
-!setgame gamedev|coding|game name
+Change game: !setgame gamedev|coding|game name
           ",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnCommandSetGame));
@@ -53,6 +53,7 @@ View current info: !title
 
     #region Commands
     /// <summary>
+    /// TODO how to configure options here for other streamers
     /// gamedev = Creative/gamedevelopment
     /// coding = Creative/programming
     /// Game Name = Game Name / chill-streams
@@ -68,17 +69,17 @@ View current info: !title
       if (game.Equals("gamedev", StringComparison.InvariantCultureIgnoreCase))
       {
         TwitchController.instance.SetGame("Creative");
-        TwitchController.instance.SetCommunities("gamedevelopment", "programming", "chill-streams");
+        //TODO TwitchController.instance.SetCommunities("gamedevelopment", "programming", "chill-streams");
       }
       else if (game.Equals("coding", StringComparison.InvariantCultureIgnoreCase))
       {
         TwitchController.instance.SetGame("Creative");
-        TwitchController.instance.SetCommunities("programming", "chill-streams");
+        //TODO TwitchController.instance.SetCommunities("programming", "chill-streams");
       }
       else
       {
         TwitchController.instance.SetGame(game);
-        TwitchController.instance.SetCommunities("chill-streams");
+        //TODO TwitchController.instance.SetCommunities("chill-streams");
       }
     }
 

@@ -25,8 +25,7 @@
     - !uptime
  - Channel Info: 
    - !help !title
-   - !help !setgame (TODO)
-   - !help !community (TODO)
+   - !help !setgame 
 
 TODO test:
 
