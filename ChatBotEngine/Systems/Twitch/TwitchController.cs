@@ -27,13 +27,13 @@ namespace HD
     // then for each: SqlManager.RecordSub(sub.User.Id, tier1To3);
 
     public delegate void OnHosting(TwitchUser channelWeAreHosting, int viewerCount);
-    public event OnHosting onHosting; 
+    public event OnHosting onHosting;
 
     public delegate void OnHosted(TwitchUser channelHostingUs, bool isAutohost, int? viewerCount);
     public event OnHosted onHosted;
 
     public delegate void OnJoinChat(TwitchUser userJoining);
-    public event OnJoinChat onJoinChat; 
+    public event OnJoinChat onJoinChat;
 
     public delegate void OnMessage(Message message);
     /// <summary>
@@ -49,7 +49,8 @@ namespace HD
     public delegate void OnSub(TwitchUser user, int tier, int months);
     public event OnSub onSub; //  SqlManager.RecordSub
 
-    public event Action onTitleChange;
+    public delegate void ChannelInfoChange(string title, string game);
+    public event ChannelInfoChange onChannelInfoChange;
 
     /// <summary>
     /// TODO rebuild when settings change.  If something like the channel changes, must restart app
@@ -239,7 +240,39 @@ namespace HD
     public async void SetGame(
       string gameName)
     {
-      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, game: gameName);
+      (string originalTitle, string originalGame) = await GetChannelInfo();
+      if (originalGame == gameName)
+      { // No change
+        return;
+      }
+      
+      await UpdateChanelInfo(originalTitle, gameName);
+    }
+
+    public async void SetTitle(
+      string title)
+    {
+      (string originalTitle, string originalGame) = await GetChannelInfo();
+      if (originalTitle == title)
+      { // No change
+        return;
+      }
+
+      await UpdateChanelInfo(title, originalGame);
+    }
+
+    private async Task UpdateChanelInfo(
+      string title, 
+      string game)
+    {
+      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, title, game);
+      await Task.Run(async delegate
+      {
+        await Task.Delay(3000); // Wait for the change to complete
+
+        (string newTitle, string newGame) = await GetChannelInfo();
+        onChannelInfoChange?.Invoke(newTitle, newGame);
+      });
     }
 
     /// <summary>
@@ -258,12 +291,6 @@ namespace HD
         authToken: BotSettings.twitch.channelOauth);
     }
 
-    public async void SetTitle(
-      string title)
-    {
-      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, title);
-      onTitleChange?.Invoke();
-    }
 
     public async void UnFollow(
       string userId)

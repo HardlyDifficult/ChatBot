@@ -27,7 +27,7 @@ namespace HD
     void IBotFeature.Init()
     {
       CommandFeatures.instance.Add(new DynamicCommand(
-         command: "!tweet", 
+         command: "!tweet",
          helpMessage: "!tweet message for Pulse and Twitter (if not too long)",
          minimumUserLevel: UserLevel.Mods,
          onCommand: OnCommandTweet));
@@ -46,7 +46,7 @@ namespace HD
       {
         if (CooldownTable.instance.IsReady(key))
         {
-          SendTweetAndPulse($"Live now! {goLiveMessage}", isForLiveThread: true);
+          SendTweetAndPulse(goLiveMessage, isForLiveThread: true);
           CooldownTable.instance.SetTime(key);
         }
       }
@@ -87,8 +87,9 @@ namespace HD
       }
 
       TwitterController.SendTweet($"{tweet} twitch.tv/HardlyDifficult", isForLiveThread);
+
       TwitchController.instance.PostToPulse(tweet);
-      TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, $"Tweeted / Pulsed: {tweet}");
+      BotLogic.instance.SendModReply(BotSettings.twitch.channelUsername, $"Tweeted / Pulsed: {tweet}");
     }
     #endregion
   }

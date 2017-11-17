@@ -1,34 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Threading;
 
 namespace HD
 {
   public class ChannelInfoFeatures : IBotFeature
   {
+    #region Data
+    public static ChannelInfoFeatures instance;
+    #endregion
+
+    #region Init
+    ChannelInfoFeatures()
+    {
+      Debug.Assert(instance == null);
+
+      instance = this;
+    }
+
     void IBotFeature.Init()
     {
-      CommandFeatures.instance.Add(new DynamicCommand("!title", "!title New Title", UserLevel.Mods, SetTitle));
-      // TODO dynamicCommandList.Add(new DynamicCommand("!setgame", "!setgame gamedev|coding|game name", UserLevel.Mods, SetGame));
+      CommandFeatures.instance.Add(new DynamicCommand(
+        command: "!title",
+        helpMessage: @"
+View current info: !title
+Set title: !title New Title
+          ",
+        minimumUserLevel: UserLevel.Mods,
+        onCommand: OnCommandSetTitle));
 
-      TwitchController.instance.onTitleChange += OnTitleChange;
+      CommandFeatures.instance.Add(new DynamicCommand(
+        command: "!setgame",
+        helpMessage: @"
+View current info: !title
+!setgame gamedev|coding|game name
+          ",
+        minimumUserLevel: UserLevel.Mods,
+        onCommand: OnCommandSetGame));
+
+      TwitchController.instance.onChannelInfoChange += OnChannelInfoChange;
     }
+    #endregion
 
-    async void OnTitleChange()
+    #region Events
+    void OnChannelInfoChange(
+      string title,
+      string game)
     {
-      string obsMessage = new string(' ', 30);
-      obsMessage += (await TwitchController.instance.GetChannelInfo()).title;
-      File.WriteAllText("..\\TODO.txt", obsMessage);
+      SendModReplyWithTitle(title, game);
     }
+    #endregion
 
-    // TODO add a help message for SetGame
+    #region Commands
     /// <summary>
     /// gamedev = Creative/gamedevelopment
     /// coding = Creative/programming
     /// Game Name = Game Name / chill-streams
     /// </summary>
-    void SetGame(
+    void OnCommandSetGame(
       Message message)
     {
       string game = message.message.GetAfter(" ");
@@ -51,33 +80,46 @@ namespace HD
         TwitchController.instance.SetGame(game);
         TwitchController.instance.SetCommunities("chill-streams");
       }
-
-      SendModReplyWithTitle(message);
     }
 
-
-
-    void SetTitle(
+    void OnCommandSetTitle(
       Message message)
     {
       string title = message.message.GetAfter(" ");
-      if (title != null && title.Length > 3)
+      if (title != null && title.Length > 1)
       {
         TwitchController.instance.SetTitle(title);
       }
+      else
+      {
+        RefreshChannelInfo();
+      }
+    }
+    #endregion
 
-      SendModReplyWithTitle(message);
+    async void RefreshChannelInfo()
+    {
+      string[] communityList = await TwitchController.instance.GetCommunity();
+      (string title, string game) = await TwitchController.instance.GetChannelInfo();
+      SendChannelInfo(title, game, communityList);
     }
 
-
-
     async void SendModReplyWithTitle(
-      Message message)
+      string title,
+      string game)
     {
-      Thread.Sleep(1000);
-      (string title, string game) = await TwitchController.instance.GetChannelInfo();
       string[] communityList = await TwitchController.instance.GetCommunity();
-      BotLogic.instance.SendModReply(message.user.displayName, $"\"{title}\" {game} / {communityList.ToCsv()}");
+      // TODO should have a message context
+      SendChannelInfo(title, game, communityList);
+
+      string obsMessage = new string(' ', 30);
+      obsMessage += title;
+      File.WriteAllText("..\\TODO.txt", obsMessage);
+    }
+
+    static void SendChannelInfo(string title, string game, string[] communityList)
+    {
+      BotLogic.instance.SendModReply(null, $"\"{title}\" {game} / {communityList.ToCsv()}");
     }
   }
 }

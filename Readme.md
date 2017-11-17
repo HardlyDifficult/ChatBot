@@ -19,11 +19,17 @@
 
  - Commands: !help !command 
  - Aliases: !help !alias
+ - Time: 
+    - !help !eta
+    - !help !live
+    - !uptime
+ - Channel Info: 
+   - !help !title
+   - !help !setgame (TODO)
+   - !help !community (TODO)
 
 TODO test:
 
- - ETA & Live (plus tweet), Uptime
- - Title / Game / Community:
  - Tweet
  - Shoutouts (why not help) - on demand and auto
 

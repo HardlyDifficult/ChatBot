@@ -63,7 +63,7 @@ namespace HD
       string displayName,
       string message)
     {
-      if (displayName.Equals(BotSettings.twitch.channelUsername, StringComparison.InvariantCultureIgnoreCase) == false)
+      if (displayName == null || displayName.Equals(BotSettings.twitch.channelUsername, StringComparison.InvariantCultureIgnoreCase) == false)
       {
         TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, $"{displayName} -> {message}");
       }

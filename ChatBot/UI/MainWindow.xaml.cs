@@ -14,15 +14,26 @@ namespace HD
 
       new KeyPressMonitor();
     }
-    #endregion
 
-    #region Events
     void Window_Loaded(
       object sender,
       RoutedEventArgs e)
     {
       CheckBotSettings();
       BotLogic.instance.Start();
+      TwitchController.instance.onChannelInfoChange += OnTitleChange;
+    }
+    #endregion
+
+    #region Events
+    void OnTitleChange(
+      string title,
+      string game)
+    {
+      Dispatcher.Invoke(() =>
+      {
+        TitleText.Text = title;
+      });
     }
 
     private void CheckBotSettings()
@@ -30,7 +41,7 @@ namespace HD
       Hide();
       if (BotSettings.IsConfigured == false)
       {
-        MessageBox.Show("Your twitch settings are not configured properly. Please setup.", 
+        MessageBox.Show("Your twitch settings are not configured properly. Please setup.",
           "ChatBot",
           MessageBoxButton.OK,
           MessageBoxImage.Exclamation);
@@ -54,7 +65,7 @@ namespace HD
 
     private void Message_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-
+      // TODO why is this here
     }
 
     private void Message_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -135,7 +146,7 @@ namespace HD
     }
 
     void Window_LostFocus(
-      object sender, 
+      object sender,
       RoutedEventArgs e)
     {
       UpdateTitle();

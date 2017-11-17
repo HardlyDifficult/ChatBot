@@ -97,13 +97,16 @@ namespace HD
     {
       CommandFeatures.instance.Add(new DynamicCommand(
         command: "!eta", 
-        helpMessage: "!eta timeSpan [= Message]",  
+        helpMessage: @"
+!eta timeSpan [= Message]
+timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
+          ",  
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnSetEta));
 
       CommandFeatures.instance.Add(new DynamicCommand(
         command: "!live",
-        helpMessage: "!live Tweet/Pulse message",
+        helpMessage: "!live [Tweet/Pulse message]",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnSetLive));
 
