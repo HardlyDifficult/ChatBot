@@ -14,6 +14,9 @@ namespace HD
     Owner = 4
   }
 
+  /// <summary>
+  /// TODO we could probably do better
+  /// </summary>
   public static class UserLevelHelpers
   {
     public static UserLevel Get(

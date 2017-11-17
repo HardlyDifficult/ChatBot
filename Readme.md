@@ -17,20 +17,41 @@
 
 ### Commands
 
- - Commands: !help !command 
- - Aliases: !help !alias
- - Time: 
-    - !help !eta
-    - !help !live
-    - !uptime
- - Channel Info: 
-   - !help !title
-   - !help !setgame 
+#### Commands
 
-TODO test:
+```!help !command```
 
- - Tweet
- - Shoutouts (why not help) - on demand and auto
+#### Aliases
+
+```!help !alias```
+
+#### Time
+
+```!help !eta```
+
+```!help !live``` 
+
+The message included when going live is posted to Twitter (with a link to the channel), as a reply to a previous conversion.
+
+```!uptime```
+
+#### Channel Info
+
+```!help !title```
+
+```!help !setgame```
+
+#### Posts (Pulse and Twitter)
+
+```!help !tweet```
+
+!Tweet posts to both Twitter and Pulse.  When posting to Twitter, a link to the channel is added.  Note tweets are not under the previous conversion like the tweet sent when going live.  
+
+#### Shoutouts
+
+```!help !shoutout```
+
+Creates a custom message for shouting out another streamer. The bot will auto shoutout someone who hosted us or the person we are hosting.
 
 ### Events
 

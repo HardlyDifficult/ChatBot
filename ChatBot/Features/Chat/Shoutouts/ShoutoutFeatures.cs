@@ -10,7 +10,10 @@ namespace HD
     {
       CommandFeatures.instance.Add(new DynamicCommand(
         command: "!shoutout",
-        helpMessage: "Give shoutout: !shoutout @Username; Create shoutout: !shoutout @Username = New shoutout message",
+        helpMessage: @"
+Give shoutout: !shoutout @Username
+Create shoutout: !shoutout @Username = New shoutout message
+          ",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnShoutout));
 
@@ -32,7 +35,7 @@ namespace HD
         builder.Append(shoutoutMessage);
         builder.Append(" ");
       }
-      builder.Append("twitch.tv/");
+      builder.Append("Join us @ twitch.tv/");
       builder.Append(streamerName);
       TwitchController.instance.SendMessage(builder.ToString());
     }
@@ -73,7 +76,7 @@ namespace HD
       {
         message.Append(shoutoutMessage);
       }
-      message.Append(" twitch.tv/");
+      message.Append(" Drop a follow @ twitch.tv/");
       message.Append(hosterName);
       message.Append(" hardlyHype hardlyHype");
       TwitchController.instance.SendMessage(message.ToString());
@@ -118,19 +121,25 @@ namespace HD
         (string streamerName, string shoutoutMessage) = GetShoutoutMessage(TwitchUser.FromName(usernameToShout));
         if (streamerName == null)
         { // I don't know who you are
+          TwitchController.instance.SendWhisper(message.user.displayName, $"Fail! Who's {usernameToShout}??");
           return;
         }
         if (shoutoutMessage == null)
         {
           shoutoutMessage = "Known streamer -> ";
         }
-        TwitchController.instance.SendMessage($"{shoutoutMessage} twitch.tv/{streamerName}");
+        TwitchController.instance.SendMessage($"{shoutoutMessage} Drop a follow @ twitch.tv/{streamerName}");
       }
     }
     
     static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
       TwitchUser user)
     {
+      if(user == null)
+      {
+        return (null, null);
+      }
+
       string shoutoutMessage = SqlManager.GetShoutoutMessage(user.userId);
       if (shoutoutMessage == null)
       {

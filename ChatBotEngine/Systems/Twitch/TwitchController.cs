@@ -75,7 +75,8 @@ namespace HD
       Reconnect();
 
       string channelName = BotSettings.twitch.channelUsername.ToLower();
-      twitchChannel = new TwitchUser(GetUserId(channelName), channelName, UserLevel.Owner);
+      User channelUser = GetUser(channelName);
+      twitchChannel = new TwitchUser(channelUser.Id, channelUser.DisplayName, UserLevel.Owner);
     }
 
     public void Stop()
@@ -380,12 +381,12 @@ namespace HD
       return null;
     }
 
-    internal string GetUserId(
+    internal User GetUser(
       string username)
     {
       try
       {
-        return twitchApi.Users.v5.GetUserByNameAsync(username).Result.Matches[0].Id;
+        return twitchApi.Users.v5.GetUserByNameAsync(username).Result.Matches[0];
       }
       catch { }
 

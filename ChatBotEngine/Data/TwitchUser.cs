@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using TwitchLib.Models.Client;
+using TwitchLib.Models.API.v5.Users;
 
 namespace HD
 {
@@ -38,8 +39,13 @@ namespace HD
     public static TwitchUser FromName(
       string username)
     {
-      string userId = TwitchController.instance.GetUserId(username);
-      return new TwitchUser(userId, username, UserLevelHelpers.Get(userId));
+      User user = TwitchController.instance.GetUser(username);
+      if(user == null)
+      {
+        return null;
+      }
+
+      return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id));
     }
     #endregion
 
