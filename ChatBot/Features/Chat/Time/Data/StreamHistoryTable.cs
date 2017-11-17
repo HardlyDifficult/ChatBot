@@ -7,14 +7,11 @@ namespace HD
 {
   public class StreamHistoryTable : ITableMigrator
   {
-    #region Data
-    public static StreamHistoryTable instance;
-
+    #region Constants
     const string 
       stateField = "State",
       timeField = "TimeInTicks",
       keystrokeCountField = "KeystrokeCount";
-
 
     long ITableMigrator.currentVersion
     {
@@ -33,6 +30,10 @@ namespace HD
     }
     #endregion
 
+    #region Data
+    public static readonly StreamHistoryTable instance = new StreamHistoryTable();
+    #endregion
+
     #region Properties
     public bool isLive
     {
@@ -44,11 +45,9 @@ namespace HD
     #endregion
 
     #region Init
-    public StreamHistoryTable()
+    StreamHistoryTable()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(

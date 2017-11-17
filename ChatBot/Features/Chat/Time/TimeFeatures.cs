@@ -16,7 +16,7 @@ namespace HD
     #endregion
 
     #region Data
-    public static TimeFeatures instance;
+    public static readonly TimeFeatures instance = new TimeFeatures();
 
     public event Action<string> onGoLive;
 
@@ -86,11 +86,9 @@ namespace HD
     #endregion
 
     #region Init
-    public TimeFeatures()
+    TimeFeatures()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     void IBotFeature.Init()

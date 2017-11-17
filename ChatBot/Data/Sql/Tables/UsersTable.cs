@@ -1,7 +1,11 @@
-﻿namespace HD
+﻿using System.Diagnostics;
+
+namespace HD
 {
   public class UsersTable : ITableMigrator
   {
+    public static readonly UsersTable instance = new UsersTable();
+
     long ITableMigrator.currentVersion
     {
       get
@@ -16,6 +20,11 @@
       {
         return "Users";
       }
+    }
+
+    UsersTable()
+    {
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(

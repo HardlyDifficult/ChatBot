@@ -28,15 +28,13 @@ namespace HD
     #endregion
 
     #region Data
-    public static SubsTable instance;
+    public static readonly SubsTable instance = new SubsTable();
     #endregion
 
     #region Init
     SubsTable()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(

@@ -7,15 +7,13 @@ namespace HD
   public class ChannelInfoFeatures : IBotFeature
   {
     #region Data
-    public static ChannelInfoFeatures instance;
+    public static readonly ChannelInfoFeatures instance = new ChannelInfoFeatures();
     #endregion
 
     #region Init
     ChannelInfoFeatures()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     void IBotFeature.Init()

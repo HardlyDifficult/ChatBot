@@ -34,15 +34,16 @@ namespace HD
     #endregion
 
     #region Data
-    public static CommandsTable instance;
+    public static readonly CommandsTable instance = new CommandsTable();
+
+    public delegate void CommandDeleted(string commandName);
+    public event CommandDeleted onCommandDeleted;
     #endregion
 
     #region Init
-    public CommandsTable()
+    CommandsTable()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(
@@ -202,7 +203,14 @@ DELETE FROM {tableName}
 WHERE {commandField}=@{commandField}
         ";
 
-      return SqlManager.ExecuteNonQuery(sql, ($"@{commandField}", commandName));
+      bool success = SqlManager.ExecuteNonQuery(sql, ($"@{commandField}", commandName));
+
+      if(success)
+      {
+        onCommandDeleted?.Invoke(commandName);
+      }
+
+      return success;
     }
     #endregion
   }

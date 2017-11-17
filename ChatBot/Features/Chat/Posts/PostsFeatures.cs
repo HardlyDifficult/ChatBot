@@ -13,15 +13,13 @@ namespace HD
   public class PostsFeatures : IBotFeature
   {
     #region Data
-    public static PostsFeatures instance;
+    public static readonly PostsFeatures instance = new PostsFeatures();
     #endregion
 
     #region Init
     PostsFeatures()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     void IBotFeature.Init()

@@ -31,19 +31,10 @@ namespace HD
     #endregion
 
     #region Data
-    public static KeyValueTable<TValueType> instance;
-
     public abstract string valueSqlType { get;}
     #endregion
 
     #region Init
-    public KeyValueTable()
-    {
-      Debug.Assert(instance == null);
-
-      instance = this;
-    }
-
     string ITableMigrator.UpgradeTo(
       long version)
     {

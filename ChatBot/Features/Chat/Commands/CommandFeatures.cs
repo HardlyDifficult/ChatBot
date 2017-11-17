@@ -11,17 +11,15 @@ namespace HD
   public class CommandFeatures : IBotFeature
   {
     #region Data
-    public static CommandFeatures instance;
+    public static readonly CommandFeatures instance = new CommandFeatures();
 
     readonly List<DynamicCommand> dynamicCommandList = new List<DynamicCommand>();
     #endregion
 
     #region Init
-    public CommandFeatures()
+    CommandFeatures()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     void IBotFeature.Init()

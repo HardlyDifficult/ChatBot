@@ -1,10 +1,20 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace HD
 {
   public class SubFeatures : IBotFeature
   {
+    #region Data
+    public static readonly SubFeatures instance = new SubFeatures();
+    #endregion
+
     #region Init
+    SubFeatures()
+    {
+      Debug.Assert(instance == null || instance == this);
+    }
+
     void IBotFeature.Init()
     {
       // TODO broken dynamicCommandList.Add(new DynamicCommand("!subcount", null, UserLevel.Everyone, GetSubCount));

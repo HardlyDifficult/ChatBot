@@ -1,7 +1,11 @@
-﻿namespace HD
+﻿using System.Diagnostics;
+
+namespace HD
 {
   public class ShoutoutsTableMigrator : ITableMigrator
   {
+    public static readonly ShoutoutsTableMigrator instance = new ShoutoutsTableMigrator();
+
     long ITableMigrator.currentVersion
     {
       get
@@ -16,6 +20,11 @@
       {
         return "Shoutouts";
       }
+    }
+
+    ShoutoutsTableMigrator()
+    {
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(

@@ -34,15 +34,13 @@ namespace HD
     #endregion
 
     #region Data
-    public static CommandAliasesTable instance;
+    public static readonly CommandAliasesTable instance = new CommandAliasesTable();
     #endregion
 
     #region Init
-    public CommandAliasesTable()
+    CommandAliasesTable()
     {
-      Debug.Assert(instance == null);
-
-      instance = this;
+      Debug.Assert(instance == null || instance == this);
     }
 
     string ITableMigrator.UpgradeTo(

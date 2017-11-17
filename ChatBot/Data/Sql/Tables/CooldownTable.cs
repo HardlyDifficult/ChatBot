@@ -34,17 +34,19 @@ namespace HD
     #endregion
 
     #region Data
-    public static CooldownTable instance;
+    public static readonly CooldownTable instance = new CooldownTable();
     #endregion
 
     #region Init
     CooldownTable()
     {
-      Debug.Assert(instance == null);
+      Debug.Assert(instance == null || instance == this);
 
-      instance = this;
+      // TODO change to use static readonly instance.  
+      // how -to vs the reflection loader and do the same for features.
+      CommandsTable.instance.onCommandDeleted += Instance_onCommandDeleted;
     }
-
+    
     string ITableMigrator.UpgradeTo(
       long version)
     {
@@ -61,6 +63,14 @@ CREATE TABLE `{tableName}` (
         default:
           return null;
       }
+    }
+    #endregion
+
+    #region Events
+    void Instance_onCommandDeleted(
+      string commandName)
+    {
+      DeleteCooldown(commandName);
     }
     #endregion
 
@@ -95,6 +105,17 @@ VALUES (@{keyField}, @{cooldownField}, @{timeLastIssuedField})
         ($"@{timeLastIssuedField}", 0),
         ($"@{cooldownField}", cooldown.Ticks));
     }
+
+    public bool DeleteCooldown(
+      string key)
+    {
+      string sql = $@"
+DELETE FROM {tableName}
+WHERE {keyField}=@{keyField}
+        ";
+
+      return SqlManager.ExecuteNonQuery(sql, ($"@{keyField}", key));
+    }
     #endregion
 
     #region Read
@@ -119,7 +140,8 @@ WHERE {keyField}=@{keyField}
           lastIssued = new DateTime(lastIssuedInTicks);
         }
         else
-        { // Command has never been run before!
+        { // Command has never been run before and has no cooldown defined
+          SetCooldown(key, TimeSpan.Zero); 
           return true;
         }
       }

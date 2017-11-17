@@ -1,11 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace HD
 {
-  class ShoutoutFeatures : IBotFeature
+  public class ShoutoutFeatures : IBotFeature
   {
+    #region Data
+    public static readonly ShoutoutFeatures instance = new ShoutoutFeatures();
+    #endregion
+
+    #region Init
+    ShoutoutFeatures()
+    {
+      Debug.Assert(instance == null || instance == this);
+    }
+
     void IBotFeature.Init()
     {
       CommandFeatures.instance.Add(new DynamicCommand(
@@ -15,12 +26,14 @@ Give shoutout: !shoutout @Username
 Create shoutout: !shoutout @Username = New shoutout message
           ",
         minimumUserLevel: UserLevel.Mods,
-        onCommand: OnShoutout));
+        onCommand: OnCommandShoutout));
 
       TwitchController.instance.onHosted += OnHosted;
       TwitchController.instance.onHosting += OnHosting;
     }
+    #endregion
 
+    #region Events
     void OnHosting(
       TwitchUser channelWeAreHosting, 
       int viewerCount)
@@ -81,8 +94,10 @@ Create shoutout: !shoutout @Username = New shoutout message
       message.Append(" hardlyHype hardlyHype");
       TwitchController.instance.SendMessage(message.ToString());
     }
+    #endregion
 
-    static void OnShoutout(
+    #region Commands
+    void OnCommandShoutout(
       Message message)
     {
       string usernameToShout = message.message.GetAfter(" ");
@@ -131,8 +146,10 @@ Create shoutout: !shoutout @Username = New shoutout message
         TwitchController.instance.SendMessage($"{shoutoutMessage} Drop a follow @ twitch.tv/{streamerName}");
       }
     }
-    
-    static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
+    #endregion
+
+    #region Private Read
+    (string streamerName, string shoutoutMessage) GetShoutoutMessage(
       TwitchUser user)
     {
       if(user == null)
@@ -148,5 +165,6 @@ Create shoutout: !shoutout @Username = New shoutout message
 
       return (user.displayName, shoutoutMessage);
     }
+    #endregion
   }
 }
