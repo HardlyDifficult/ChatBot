@@ -1,28 +1,11 @@
-# Project setup
 
- - Clone this repro
- - Clone [HardlyCommon](https://github.com/hardlydifficult/HardlyCommon) in the same directory (so ChatBot and HardlyCommon folders are side by side)
- - If references are broken (very likely):
-    - Open menu Tools -> NuGet Package Manager
-    - Run ```Update-Package -reinstall```
- - Hit play.
-   - It'll prompt you for settings.  Fill these in and then restart the app.
+ - [For Streamers](#for-streamers)
+ - [For Mods](#for-mods)
+ - [For Developers](#for-developers)
 
-## Sync your forked repository
+# For Streamers
 
-**Do this frequently if you are making changes**
-
- - Change directory to your local repository.
- - Switch to master branch if you are not ```git checkout master```
- - Add the parent as a remote repository, ```git remote add upstream https://github.com/hardlydifficult/ChatBot.git```
- - Issue ```git fetch upstream```
- - Issue ```git rebase upstream/master```
- - Check for pending merges with ```git status```
- - Issue ```git push origin master```
- 
-https://stackoverflow.com/a/31836086
-
-# How-to Use the Bot
+## How-to Use the Bot
 
  - Update Settings
     - Changes may require restarting the app
@@ -60,15 +43,43 @@ TODO test:
    - TODO.txt (currently your stream title)
    - Keystrokes.txt (holds the most recent keyboard combinations like "ctrl+s")
 
-# Code Design
+# For Mods
+
+(coming soon?)
+
+# For Developers
+
+## Project setup
+
+ - Clone this repro
+ - Clone [HardlyCommon](https://github.com/hardlydifficult/HardlyCommon) in the same directory (so ChatBot and HardlyCommon folders are side by side)
+ - If references are broken (very likely):
+    - Open menu Tools -> NuGet Package Manager
+    - Run ```Update-Package -reinstall```
+ - Hit play.
+   - It'll prompt you for settings.  Fill these in and then restart the app.
+
+## Sync your forked repository
+
+**Do this frequently if you are making changes**
+
+ - Change directory to your local repository.
+ - Switch to master branch if you are not ```git checkout master```
+ - Add the parent as a remote repository, ```git remote add upstream https://github.com/hardlydifficult/ChatBot.git```
+ - Issue ```git fetch upstream```
+ - Issue ```git rebase upstream/master```
+ - Check for pending merges with ```git status```
+ - Issue ```git push origin master```
+ 
+https://stackoverflow.com/a/31836086
+
+## Code Design
 
  - ChatBotEngine 
    - Why project separation? - Facade
  - Dynamic commands
 
-
-
-# TODO list
+## TODO list
 
 This bot is NOT ready for another streamer to use.  Our TODO list is here: https://trello.com/b/M3Z2GerB/chatbot
 
