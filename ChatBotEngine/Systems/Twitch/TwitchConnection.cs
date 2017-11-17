@@ -223,8 +223,9 @@ namespace HD
       string connectAsUsername,
       string connectAsOauth)
     {
-      throttleMessage = new Throttle(TimeSpan.FromSeconds(.5));
-      throttleWhisper = new Throttle(TimeSpan.FromSeconds(.5));
+      // TODO the throttle time is high because otherwise messages are thrown out.  Who did that?!
+      throttleMessage = new Throttle(TimeSpan.FromSeconds(.75));
+      throttleWhisper = new Throttle(TimeSpan.FromSeconds(.75));
 
       client = new TwitchClient(
         new TwitchLib.Models.Client.ConnectionCredentials(connectAsUsername, connectAsOauth),
@@ -253,27 +254,37 @@ namespace HD
 
     public void SendWhisper(
       string username,
-      string message)
+      string messageToSend)
     {
-      string remainingMessage;
-      if (message.Length > 400)
+      string[] messageList = messageToSend.Split(new[] { '\r' }, StringSplitOptions.RemoveEmptyEntries);
+      for (int i = 0; i < messageList.Length; i++)
       {
-        int iSpace = message.LastIndexOf(' ', 400);
-        remainingMessage = message.Substring(iSpace);
-        message = message.Substring(0, iSpace);
-      }
-      else
-      {
-        remainingMessage = null;
-      }
+        string message = messageList[i].Trim();
+        if(string.IsNullOrWhiteSpace(message))
+        {
+          continue;
+        }
 
-      throttleWhisper.SleepIfNeeded();
-      client.SendWhisper(username, message);
+        string remainingMessage;
+        if (message.Length > 400)
+        {
+          int iSpace = message.LastIndexOf(' ', 400);
+          remainingMessage = message.Substring(iSpace);
+          message = message.Substring(0, iSpace);
+        }
+        else
+        {
+          remainingMessage = null;
+        }
 
-      if (remainingMessage != null)
-      {
-        System.Threading.Thread.Sleep(500);
-        SendWhisper(username, remainingMessage);
+        throttleWhisper.SleepIfNeeded();
+        client.SendWhisper(username, message);
+
+        if (remainingMessage != null)
+        {
+          System.Threading.Thread.Sleep(500);
+          SendWhisper(username, remainingMessage);
+        }
       }
     }
     #endregion

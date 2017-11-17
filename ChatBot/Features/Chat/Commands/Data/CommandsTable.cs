@@ -15,7 +15,7 @@ namespace HD
     {
       get
       {
-        return 1;
+        return 2;
       }
     }
 
@@ -60,8 +60,13 @@ CREATE TABLE IF NOT EXISTS `{tableName}` (
   `CooldownInSeconds` INTEGER NOT NULL );
           ";
         case 1:
+          // We need to preserve the version that existed, 
+          // but never need to do this upgrade again since the next
+          // includes all changes required.
+          return null;
+        case 2:
           return SqlManager.GetSqlAlterTable(tableName, $@"
-  `{commandField}` TEXT NOT NULL, 
+  `{commandField}` TEXT NOT NULL PRIMARY KEY, 
   `{responseField}` TEXT NOT NULL, 
   `{userLevelField}` INTEGER NOT NULL
             ", $"{commandField}, {responseField}, {userLevelField}");

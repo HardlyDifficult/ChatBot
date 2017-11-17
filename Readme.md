@@ -1,16 +1,12 @@
 # Project setup
 
  - Clone this repro
- - Clone [HardlyCommon](https://github.com/hardlydifficult/HardlyCommon)
- - Under references:
-   - HardlyCommon
-     - Add the HardlyCommon project (the one you just cloned) to your solution.
-     - Add a project reference HardlyCommon
-   - For every other yellow icon in references:
-     - Open menu Tools -> NuGet Package Manager
-     - Run ```Update-Package -reinstall```
+ - Clone [HardlyCommon](https://github.com/hardlydifficult/HardlyCommon) in the same directory (so ChatBot and HardlyCommon folders are side by side)
+ - If references are broken (very likely):
+    - Open menu Tools -> NuGet Package Manager
+    - Run ```Update-Package -reinstall```
  - Hit play.
-   - It'll fail, but create a template for the settings file.
+   - It'll prompt you for settings.  Fill these in and then restart the app.
 
 ## Sync your forked repository
 
@@ -28,12 +24,54 @@ https://stackoverflow.com/a/31836086
 
 # How-to Use the Bot
 
- - Update ChatBot\bin\Settings.json
+ - Update Settings
+    - Changes may require restarting the app
     - You can leave Twitter values null
+ - The bot likes to whisper with the streamer.  You may need to follow the bot if whispers are not appearing.
 
+## Commands
+
+ - Commands: !help !command 
+ - Aliases: !help !alias
+
+TODO test:
+
+ - ETA & Live (plus tweet), Uptime
+ - Title / Game / Community:
+ - Tweet
+ - Shoutouts (why not help) - on demand and auto
+
+## Events
+
+ - First message
+ - OnSub and on Bits -> Thanks (do we have a bit event yet)
+ - Host and Hosting -> shoutout 
+
+## UI
+
+ - Stream title (updated anytime you change the text)
+ - Issue command (this is the same as whispering the bot)
+   - Note that the "!" prefix is optional when whispering the bot.
+ - Settings (saves to settings.json)
 
 ## Overlay
 
- - There are a couple files created by the bot you may use in OBS:
+ - There are a couple files created by the bot you may use in OBS (under the bin directory):
    - TODO.txt (currently your stream title)
    - Keystrokes.txt (holds the most recent keyboard combinations like "ctrl+s")
+
+# Code Design
+
+ - ChatBotEngine 
+   - Why project separation? - Facade
+ - Dynamic commands
+
+
+
+# TODO list
+
+This bot is NOT ready for another streamer to use.  Our TODO list is here: https://trello.com/b/M3Z2GerB/chatbot
+
+If you are interested in contributing, please!  Just let me know if you have questions.
+
+If you are a streamer interested in using this, let us know what features you want.

@@ -28,21 +28,30 @@ namespace HD
     {
       Add(new DynamicCommand(
         command: "!command",
-        helpMessage: "!command !commandName [userLevel:Everyone|Follower|Subscribers|Mods|Owner (default Everyone)] [timeoutInSeconds (default 200)] = commandText",
+        helpMessage: @"
+To list all commands: !command
+To create or update a command: !command !commandName [userLevel:Everyone|Follower|Subscribers|Mods|Owner (default Everyone)] [timeoutInSeconds (default 200)] = commandText
+To delete a command: !command delete !commandOrAlias
+          ",
         minimumUserLevel: UserLevel.Mods,
-        onCommand: OnUpdateCommand));
+        onCommand: OnCommand));
 
       Add(new DynamicCommand(
         command: "!alias",
-        helpMessage: "List: !alias !commandName; Create: !alias !commandName !aliasName !additionalAliasName; Delete: !alias delete !aliasName",
+        helpMessage: @"
+List all aliases for a given command: !alias !commandOrAlias
+Create new alias(es): !alias !existingCommandOrAlias !newAliasName !additionalAliasName
+Delete alias(es): !alias delete !aliasName
+          ",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnAlias));
 
-      Add(new DynamicCommand(
-        command: "!delete",
-        helpMessage: "!delete !commandName",
-        minimumUserLevel: UserLevel.Mods,
-        onCommand: OnDeleteCommand));
+      // TODO
+      //Add(new DynamicCommand(
+      //  command: "!delete",
+      //  helpMessage: "To delete a command: !delete !commandName",
+      //  minimumUserLevel: UserLevel.Mods,
+      //  onCommand: OnDeleteCommand));
 
       Add(new DynamicCommand(
         command: "!help",
@@ -50,11 +59,12 @@ namespace HD
         minimumUserLevel: UserLevel.Everyone,
         onCommand: OnHelp));
 
-      Add(new DynamicCommand(
-        command: "!commands",
-        helpMessage: null,
-        minimumUserLevel: UserLevel.Everyone,
-        onCommand: OnSendCommandList));
+      // TODO
+      //Add(new DynamicCommand(
+      //  command: "!commands",
+      //  helpMessage: null,
+      //  minimumUserLevel: UserLevel.Everyone,
+      //  onCommand: OnSendCommandList));
 
       TwitchController.instance.onMessage += OnMessage;
     }
@@ -99,18 +109,6 @@ namespace HD
       }
     }
 
-    void OnDeleteCommand(
-      Message message)
-    {
-      string command = message.message.GetAfter(" ");
-      if (command == null)
-      {
-        return;
-      }
-
-      DeleteCommand(message, command);
-    }
-
     void OnHelp(
       Message message)
     {
@@ -120,21 +118,35 @@ namespace HD
       }
       else
       { // There is no help for users other than the command list
-        OnSendCommandList(message);
+        SendCommandList(message);
       }
     }
 
-    void OnSendCommandList(
+    void OnCommand(
       Message message)
     {
-      SendCommandList(message);
-    }
+      string issuedCommandText = message.message.GetBefore("=");
+      string[] issuedCommandTokens = issuedCommandText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-    void OnUpdateCommand(
-      Message message)
-    {
-      if (TryGetNewCommandDetails(message, out string commandName, out string commandText, out UserLevel userLevel, out int timeoutInSeconds))
-      {
+      if (issuedCommandTokens.Length < 1)
+      { // Must be at least 1 token to do anything
+        return;
+      }
+
+      if (issuedCommandTokens.Length == 1)
+      { // List commands (!commands)
+        SendCommandList(message);
+      }
+      else if (issuedCommandTokens[1].Equals("delete", StringComparison.InvariantCultureIgnoreCase))
+      { // Delete command (!command delete !commandOrAlias)
+        DeleteCommand(message, commandOrAliasToDeleteList: issuedCommandTokens, startIndex: 2);
+      }
+      else if (TryGetNewCommandDetails(message,
+        out string commandName,
+        out string commandText,
+        out UserLevel userLevel,
+        out int timeoutInSeconds))
+      { // Create or Update command: !command !commandOrAlias = Text
         CreateOrUpdateCommand(message, commandName, commandText, userLevel, TimeSpan.FromSeconds(timeoutInSeconds));
       }
     }
@@ -184,7 +196,7 @@ namespace HD
         CooldownTable.instance.SetCooldown(commandName, timeout);
 
         TwitchController.instance.SendWhisper(message.user.displayName,
-          $"Command: {commandName} {userLevel} {timeout} = {commandText}");
+          $"Command: {commandName} {userLevel} {timeout.TotalSeconds:N0} = {commandText}");
       }
       else
       {
@@ -199,31 +211,44 @@ namespace HD
     {
       for (int i = startIndex; i < aliasesToDelete.Length; i++)
       {
-        if (CommandsTable.instance.DeleteCommand(aliasesToDelete[i]))
+        string aliasToDelete = aliasesToDelete[i];
+        SqlTwitchCommand command = GetCommand(aliasToDelete);
+        if (command.command.Equals(aliasToDelete, StringComparison.InvariantCultureIgnoreCase))
+        { // Don't delete a command when I thought we were killing aliases
+          continue;
+        }
+
+        if (CommandAliasesTable.instance.DeleteAlias(aliasToDelete))
         {
-          BotLogic.instance.SendModReply(message.user.displayName, $"Deleted {aliasesToDelete[i]}");
+          BotLogic.instance.SendModReply(message.user.displayName, 
+            $"Deleted alias {aliasesToDelete[i]} (for {command.command})");
         }
       }
     }
 
     public void DeleteCommand(
       Message message,
-      string commandOrAliasToDelete)
+      string[] commandOrAliasToDeleteList,
+      int startIndex)
     {
-      SqlTwitchCommand command = GetCommand(commandOrAliasToDelete);
-      if (command.isValid == false)
-      { // Command not found
-        return;
-      }
-      string commandToDelete = command.command;
+      for (int i = startIndex; i < commandOrAliasToDeleteList.Length; i++)
+      {
+        string commandOrAliasToDelete = commandOrAliasToDeleteList[i];
+        SqlTwitchCommand command = GetCommand(commandOrAliasToDelete);
+        if (command.isValid == false)
+        { // Command not found
+          return;
+        }
+        string commandToDelete = command.command;
 
-      if (CommandsTable.instance.DeleteCommand(commandToDelete))
-      {
-        TwitchController.instance.SendWhisper(message.user.displayName, $"Deleted {commandToDelete}");
-      }
-      else
-      {
-        TwitchController.instance.SendWhisper(message.user.displayName, "Failed.. to delete a command, !delete !oldcommand");
+        if (CommandsTable.instance.DeleteCommand(commandToDelete))
+        {
+          TwitchController.instance.SendWhisper(message.user.displayName, $"Deleted {commandToDelete}");
+        }
+        else
+        {
+          TwitchController.instance.SendWhisper(message.user.displayName, "Failed.. to delete a command, !delete !oldcommand");
+        }
       }
     }
     #endregion
@@ -252,15 +277,23 @@ namespace HD
         return;
       }
       StringBuilder response = new StringBuilder();
+      response.Append("Command ");
       response.Append(command);
-      response.Append(": ");
-      for (int i = 0; i < aliasList.Count; i++)
+      response.Append(" aliases: ");
+      if (aliasList.Count > 0)
       {
-        if (i > 0)
+        for (int i = 0; i < aliasList.Count; i++)
         {
-          response.Append(", ");
+          if (i > 0)
+          {
+            response.Append(", ");
+          }
+          response.Append(aliasList[i]);
         }
-        response.Append(aliasList[i]);
+      }
+      else
+      {
+        response.Append("none.");
       }
       TwitchController.instance.SendWhisper(message.user.displayName, response.ToString());
     }
@@ -350,6 +383,8 @@ namespace HD
           builder.Append(", ");
         }
       }
+
+      builder.Append("\r\n");
 
       for (int i = 0; i < dynamicCommandList.Count; i++)
       {

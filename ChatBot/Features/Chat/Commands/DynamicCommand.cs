@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace HD
 {
+  /// <summary>
+  /// TODO trim help message, but then include other newlines
+  /// </summary>
   public class DynamicCommand
   {
     #region Data

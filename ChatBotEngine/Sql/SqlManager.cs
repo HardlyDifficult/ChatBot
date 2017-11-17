@@ -110,7 +110,13 @@ namespace HD
       params (string name, object value)[] parameters)
     {
       SQLiteCommand command = CreateCommand(sql, parameters);
-      return command.ExecuteNonQuery() > 0;
+      try
+      {
+        return command.ExecuteNonQuery() > 0;
+      }
+      catch { }
+
+      return false;
     }
     #endregion
 
@@ -122,7 +128,7 @@ namespace HD
     /// e.g. {commandField}, {responseField}, {userLevelField}
     /// </param>
     public static string GetSqlAlterTable(
-      string tableName, 
+      string tableName,
       string tableDefinition,
       string fieldList)
     {
@@ -143,7 +149,7 @@ DROP TABLE temp_{tableName};
     }
 
     public static DbDataReader GetReader(
-      string sql, 
+      string sql,
       params (string key, object value)[] parameters)
     {
       SQLiteCommand command = CreateCommand(sql, parameters);
@@ -176,7 +182,14 @@ DROP TABLE temp_{tableName};
         "select UserLevel from users where UserId=@UserId", dbConnection);
       command.Parameters.Add(new SQLiteParameter("@UserId", userId));
 
-      return (UserLevel)(long)(command.ExecuteScalar() ?? 0);
+      object result = command.ExecuteScalar();
+
+      if (result == null || result is DBNull)
+      {
+        return 0;
+      }
+
+      return (UserLevel)(long)result;
     }
 
     internal static bool HasAutoFollowedBefore(
@@ -205,7 +218,7 @@ DROP TABLE temp_{tableName};
 
     #region Private Read API
     static SQLiteCommand CreateCommand(
-      string sql, 
+      string sql,
       (string name, object value)[] parameters)
     {
       SQLiteCommand command = new SQLiteCommand(sql, dbConnection);

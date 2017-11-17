@@ -5,6 +5,7 @@ using System.Diagnostics;
 
 namespace HD
 {
+  // TODO aliases for 'dynamic' commands
   /// <summary>
   /// Aliases are additional trigger words for a command.
   /// </summary>
