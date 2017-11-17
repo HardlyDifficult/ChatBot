@@ -38,7 +38,7 @@ namespace HD
     #endregion
 
     #region Init
-    public CooldownTable()
+    CooldownTable()
     {
       Debug.Assert(instance == null);
 

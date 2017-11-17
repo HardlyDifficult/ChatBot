@@ -45,8 +45,13 @@
     <Compile Include="Data\Sql\Tables\KeyValueTable.cs" />
     <Compile Include="Data\Sql\Tables\CooldownTable.cs" />
     <Compile Include="Features\BotLogic.cs" />
+    <Compile Include="Features\Chat\ChannelInfo\ChannelInfoFeatures.cs" />
     <Compile Include="Features\Chat\Commands\CommandFeatures.cs" />
+    <Compile Include="Features\Chat\Credits\CreditsFeatures.cs" />
+    <Compile Include="Features\Chat\FirstMessage\FirstMessageFeatures.cs" />
+    <Compile Include="Features\Chat\Posts\PostsFeatures.cs" />
     <Compile Include="Features\Chat\Shoutouts\ShoutoutFeatures.cs" />
+    <Compile Include="Features\Chat\Subs\SubFeatures.cs" />
     <Compile Include="Features\Chat\Time\Data\HistoryState.cs" />
     <Compile Include="Features\Chat\IBotFeature.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">
@@ -58,9 +63,9 @@
     <Compile Include="Data\Sql\Tables\SchemaTable.cs" />
     <Compile Include="Features\Chat\Shoutouts\Data\ShoutoutsTable.cs" />
     <Compile Include="Features\Chat\Time\Data\StreamHistoryTable.cs" />
-    <Compile Include="Data\Sql\Tables\SubsTable.cs" />
+    <Compile Include="Features\Chat\Subs\Data\SubsTable.cs" />
     <Compile Include="Data\Sql\Tables\UsersTable.cs" />
-    <Compile Include="Features\Chat\Edu\Edu.cs" />
+    <Compile Include="Features\Chat\Edu\EduFeatures.cs" />
     <Compile Include="Features\Chat\Time\TimeFeatures.cs" />
     <Compile Include="Features\Overlay\KeyPressMonitor.cs" />
     <Compile Include="Features\Overlay\KeystrokeInfo.cs" />

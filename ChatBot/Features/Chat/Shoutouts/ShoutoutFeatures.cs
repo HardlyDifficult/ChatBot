@@ -13,12 +13,16 @@ namespace HD
         helpMessage: "Give shoutout: !shoutout @Username; Create shoutout: !shoutout @Username = New shoutout message",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnShoutout));
+
+      TwitchController.instance.onHosted += OnHosted;
+      TwitchController.instance.onHosting += OnHosting;
     }
 
-    public static void OnHostingAnotherChannel(
-      string channelName)
+    void OnHosting(
+      TwitchUser channelWeAreHosting, 
+      int viewerCount)
     {
-      (string streamerName, string shoutoutMessage) = GetShoutoutMessage(channelName);
+      (string streamerName, string shoutoutMessage) = GetShoutoutMessage(channelWeAreHosting);
       StringBuilder builder = new StringBuilder();
       builder.Append("Now hosting ");
       builder.Append(streamerName);
@@ -33,13 +37,13 @@ namespace HD
       TwitchController.instance.SendMessage(builder.ToString());
     }
 
-    public static void OnHost(
-      string displayName,
-      int? viewerCount,
-      bool isAutoHost)
+    void OnHosted(
+     TwitchUser channelHostingUs, 
+     bool isAutohost, 
+     int? viewerCount)
     {
       // TODO put this back AutoFollow(TwitchController.instance.GetUserId(displayName));
-      if (isAutoHost)
+      if (isAutohost)
       {
         return;
       }
@@ -47,7 +51,7 @@ namespace HD
       { // Hide counts less than 10
         viewerCount = null;
       }
-      (string hosterName, string shoutoutMessage) = GetShoutoutMessage(displayName);
+      (string hosterName, string shoutoutMessage) = GetShoutoutMessage(channelHostingUs);
       if (string.IsNullOrWhiteSpace(hosterName))
       { // I dunno who you are...
         return;
@@ -111,7 +115,7 @@ namespace HD
         SqlManager.SetShoutoutMessage(userToShoutout.userId, newShoutoutMessage);
       }
       {
-        (string streamerName, string shoutoutMessage) = GetShoutoutMessage(usernameToShout);
+        (string streamerName, string shoutoutMessage) = GetShoutoutMessage(TwitchUser.FromName(usernameToShout));
         if (streamerName == null)
         { // I don't know who you are
           return;
@@ -123,11 +127,10 @@ namespace HD
         TwitchController.instance.SendMessage($"{shoutoutMessage} twitch.tv/{streamerName}");
       }
     }
-
-    private static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
-      string usernameToShout)
+    
+    static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
+      TwitchUser user)
     {
-      TwitchUser user = TwitchUser.FromName(usernameToShout);
       string shoutoutMessage = SqlManager.GetShoutoutMessage(user.userId);
       if (shoutoutMessage == null)
       {

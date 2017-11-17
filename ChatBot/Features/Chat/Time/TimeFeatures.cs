@@ -119,7 +119,7 @@ namespace HD
         minimumUserLevel: UserLevel.Everyone,
         onCommand: OnShowUptime));
 
-      BotLogic.onJoin += OnJoin;
+      TwitchController.instance.onJoinChat += OnJoinChat;
     }
     #endregion
 
@@ -127,7 +127,7 @@ namespace HD
     /// <summary>
     /// While offline, show ETA everytime someone new hops in... unless cooldown.
     /// </summary>
-    void OnJoin(
+    void OnJoinChat(
       TwitchUser user)
     {
       ShowEta(
@@ -140,9 +140,14 @@ namespace HD
       string goLiveMessage)
     {
       StreamHistoryTable.instance.AddStreamHistory(HistoryState.Live);
+
+      // TODO TwitchController.instance.DownloadFullSubList();
+      TwitchController.instance.ExitHost();
+      TwitchController.instance.SendMessage("Welcome back!");
+
       onGoLive?.Invoke(goLiveMessage);
     }
-
+    
     void OnGoOffline(
       string etaMessage)
     {
@@ -223,7 +228,7 @@ namespace HD
       builder.Append(DateTime.Now.ToShortTimeString());
 
       bool isCooldownReady = CooldownTable.instance.IsReady(uptimeKey);
-      if (BotLogic.SendMessageOrWhisper(message, builder.ToString(), isCooldownReady))
+      if (BotLogic.instance.SendMessageOrWhisper(message, builder.ToString(), isCooldownReady))
       {
         CooldownTable.instance.SetTime(uptimeKey);
       }
@@ -243,7 +248,7 @@ namespace HD
 
       string response = ConstructResponse();
       bool isCooldownReady = CooldownTable.instance.IsReady(etaKey);
-      if (BotLogic.SendMessageOrWhisper(message, response, isCooldownReady))
+      if (BotLogic.instance.SendMessageOrWhisper(message, response, isCooldownReady))
       {
         CooldownTable.instance.SetTime(etaKey);
       }

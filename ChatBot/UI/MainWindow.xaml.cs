@@ -22,7 +22,7 @@ namespace HD
       RoutedEventArgs e)
     {
       CheckBotSettings();
-      TwitchController.instance.Start();
+      BotLogic.instance.Start();
     }
 
     private void CheckBotSettings()
@@ -45,7 +45,7 @@ namespace HD
       object sender,
       CancelEventArgs e)
     {
-      TwitchController.instance.Stop();
+      BotLogic.instance.Stop();
     }
     #endregion
 
@@ -62,7 +62,7 @@ namespace HD
       if (e.Key == System.Windows.Input.Key.Enter)
       {
         string message = Message.Text;
-        BotLogic.OnMessage(new Message(
+        TwitchController.instance.InjectFakeMessage(new Message(
           TwitchController.instance.twitchChannel,
           message,
           true,
@@ -112,21 +112,21 @@ namespace HD
       }
     }
 
-    void Title_Loaded(
+    async void Title_Loaded(
       object sender,
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = TitleText.Text = BotLogic.streamTitle; // I'm not crazy, promise ;)
+      TitleText.Text = (await TwitchController.instance.GetChannelInfo()).title;
     }
 
     void Title_LostFocus(
       object sender,
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = TitleText.Text;
+      UpdateTitle();
     }
 
-    private void OpenSettings_OnClick(object sender, RoutedEventArgs e)
+    void OpenSettings_OnClick(object sender, RoutedEventArgs e)
     {
       if (new SettingsWindow().ShowDialog() == false)
       {
@@ -138,7 +138,12 @@ namespace HD
       object sender, 
       RoutedEventArgs e)
     {
-      BotLogic.streamTitle = TitleText.Text;
+      UpdateTitle();
+    }
+
+    void UpdateTitle()
+    {
+      TwitchController.instance.SetTitle(TitleText.Text);
     }
   }
 }

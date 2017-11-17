@@ -27,22 +27,29 @@ namespace HD
     // then for each: SqlManager.RecordSub(sub.User.Id, tier1To3);
 
     public delegate void OnHosting(TwitchUser channelWeAreHosting, int viewerCount);
-    public OnHosting onHosting; // TODO shoutout
+    public event OnHosting onHosting; 
 
     public delegate void OnHosted(TwitchUser channelHostingUs, bool isAutohost, int? viewerCount);
-    public OnHosted onHosted; // TODO BotLogic.OnHost
+    public event OnHosted onHosted;
 
     public delegate void OnJoinChat(TwitchUser userJoining);
-    public OnJoinChat onJoinChat; // TODO BotLogic.OnJoin
+    public event OnJoinChat onJoinChat; 
 
     public delegate void OnMessage(Message message);
     /// <summary>
+    /// Only used when you need to update a message before others respond.
+    /// </summary>
+    public event OnMessage onMessageFirstPass;
+
+    /// <summary>
     /// Fired for chat and whisper messages.
     /// </summary>
-    public OnMessage onMessage; // TODO botlogic.onmessage
+    public event OnMessage onMessage;
 
     public delegate void OnSub(TwitchUser user, int tier, int months);
-    public OnSub onSub; // TODO botlogi.onsub AND SqlManager.RecordSub
+    public event OnSub onSub; //  SqlManager.RecordSub
+
+    public event Action onTitleChange;
 
     /// <summary>
     /// TODO rebuild when settings change.  If something like the channel changes, must restart app
@@ -156,14 +163,21 @@ namespace HD
       object sender,
       OnMessageReceivedArgs e)
     {
-      onMessage?.Invoke(new Message(e.ChatMessage));
+      OnMessageOrWhisper(new Message(e.ChatMessage));
+    }
+
+    void OnMessageOrWhisper(
+      Message message)
+    {
+      onMessageFirstPass?.Invoke(message);
+      onMessage?.Invoke(message);
     }
 
     void OnWhisperReceived(
       object sender,
       OnWhisperReceivedArgs e)
     {
-      onMessage?.Invoke(new Message(e.WhisperMessage));
+      OnMessageOrWhisper(new Message(e.WhisperMessage));
     }
 
     void OnReSubscriber(
@@ -186,6 +200,12 @@ namespace HD
     #endregion
 
     #region Write API
+    public void InjectFakeMessage(
+      Message message)
+    {
+      OnMessageOrWhisper(message);
+    }
+
     public void ExitHost()
     {
       botClient.SendMessage("/unhost");
@@ -242,6 +262,7 @@ namespace HD
       string title)
     {
       await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, title);
+      onTitleChange?.Invoke();
     }
 
     public async void UnFollow(

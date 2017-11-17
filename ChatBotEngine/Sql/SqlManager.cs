@@ -73,7 +73,7 @@ namespace HD
       command.ExecuteNonQuery();
     }
 
-    internal static void StoreUser(
+    public static void StoreUser(
       string userId, string displayName, UserLevel userLevel)
     {
       SQLiteCommand command = new SQLiteCommand(
@@ -103,51 +103,6 @@ namespace HD
         }
       }
       catch { }
-    }
-
-    internal static void DropAllSubs()
-    {
-      SQLiteCommand command = new SQLiteCommand(
-       "delete from subs", dbConnection);
-      command.ExecuteNonQuery();
-    }
-
-    internal static void RecordSub(
-      string userId,
-      int tier1To3)
-    {
-      if (userId == TwitchController.instance.twitchChannel.userId)
-      {
-        return;
-      }
-
-      if (tier1To3 == 3)
-      {
-        tier1To3 = 6;
-      }
-
-      SQLiteCommand command = null;
-      try
-      {
-        command = new SQLiteCommand(
-        "insert into subs(UserId, Points) values(@UserId, @Points)", dbConnection);
-        command.Parameters.Add(new SQLiteParameter("@UserId", userId));
-        command.Parameters.Add(new SQLiteParameter("@Points", tier1To3));
-        command.ExecuteNonQuery();
-      }
-      catch
-      {
-        command.CommandText = "update subs set Points=@Points where UserId=@UserId";
-        int count = command.ExecuteNonQuery();
-        Debug.Assert(count == 1);
-      }
-    }
-
-    public static int GetTotalSubCount()
-    {
-      SQLiteCommand command = new SQLiteCommand(
-       "select sum(Points) from subs", dbConnection);
-      return Convert.ToInt32(command.ExecuteScalar()) + 1;
     }
 
     public static bool ExecuteNonQuery(

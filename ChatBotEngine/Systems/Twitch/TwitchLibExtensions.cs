@@ -2,7 +2,7 @@
 
 namespace HD
 {
-  public static class TwitchLibExtensions
+  internal static class TwitchLibExtensions
   {
     /// <summary>
     /// Returns 1, 2, or 3

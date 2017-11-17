@@ -56,7 +56,7 @@ namespace HD
         minimumUserLevel: UserLevel.Everyone,
         onCommand: OnSendCommandList));
 
-      BotLogic.onMessage += OnMessage;
+      TwitchController.instance.onMessage += OnMessage;
     }
     #endregion
 
@@ -161,7 +161,7 @@ namespace HD
         string alias = aliasListToCreate[i];
         if (CommandAliasesTable.instance.CreateAlias(existingCommandOrAlias, alias))
         {
-          BotLogic.SendModReply(
+          BotLogic.instance.SendModReply(
             message.user.displayName,
             $"Created alias for {existingCommandOrAlias}: {alias}");
         }
@@ -201,7 +201,7 @@ namespace HD
       {
         if (CommandsTable.instance.DeleteCommand(aliasesToDelete[i]))
         {
-          BotLogic.SendModReply(message.user.displayName, $"Deleted {aliasesToDelete[i]}");
+          BotLogic.instance.SendModReply(message.user.displayName, $"Deleted {aliasesToDelete[i]}");
         }
       }
     }
@@ -330,7 +330,7 @@ namespace HD
 
       bool cooldownReady = CooldownTable.instance.IsReady(command.command);
       string response = SwapInVariables(command.response);
-      if (BotLogic.SendMessageOrWhisper(message, response, cooldownReady))
+      if (BotLogic.instance.SendMessageOrWhisper(message, response, cooldownReady))
       {
         CooldownTable.instance.SetTime(command.command);
       }
