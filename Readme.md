@@ -6,6 +6,8 @@
 
 ## For Streamers
 
+**The bot is NOT READY for other streamers to use -- not enough config options are available yet.** However you are welcome to give it a try and let us know what features you want.
+
 ### How-to Use the Bot
 
  - Update Settings
@@ -46,7 +48,7 @@ TODO test:
 
 ## For Mods
 
-(coming soon?)
+(coming soon?)  For the mods out there (my channel or others), what features might be helpful?
 
 ## For Developers
 
