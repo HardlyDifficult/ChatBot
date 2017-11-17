@@ -63,9 +63,7 @@ namespace HD
       {
         string message = Message.Text;
         BotLogic.OnMessage(new Message(
-          TwitchController.instance.twitchChannelId,
-          BotSettings.twitch.channelUsername,
-          UserLevel.Owner,
+          TwitchController.instance.twitchChannel,
           message,
           true,
           0));

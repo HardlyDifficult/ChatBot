@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace HD
@@ -16,6 +15,9 @@ namespace HD
       this.minTimeBetweenRuns = minTimeBetweenRuns;
     }
 
+    /// <summary>
+    /// TODO how-to deal with a huge backlog(?)
+    /// </summary>
     public void SleepIfNeeded()
     {
       TimeSpan timeToSleep = minTimeBetweenRuns - (DateTime.Now - lastRun);

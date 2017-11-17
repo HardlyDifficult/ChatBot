@@ -107,11 +107,8 @@ namespace HD
 
       if (newShoutoutMessage != null)
       {
-        (string streamerName, string streamerId) = TwitchController.instance.GetUserInfo(usernameToShout);
-        if (streamerId != null)
-        {
-          SqlManager.SetShoutoutMessage(streamerId, newShoutoutMessage);
-        }
+        TwitchUser userToShoutout = TwitchUser.FromName(usernameToShout);
+        SqlManager.SetShoutoutMessage(userToShoutout.userId, newShoutoutMessage);
       }
       {
         (string streamerName, string shoutoutMessage) = GetShoutoutMessage(usernameToShout);
@@ -130,18 +127,14 @@ namespace HD
     private static (string streamerName, string shoutoutMessage) GetShoutoutMessage(
       string usernameToShout)
     {
-      (string streamerName, string streamerId) = TwitchController.instance.GetUserInfo(usernameToShout);
-      if (streamerId == null)
-      {
-        return (streamerName, null);
-      }
-      string shoutoutMessage = SqlManager.GetShoutoutMessage(streamerId);
+      TwitchUser user = TwitchUser.FromName(usernameToShout);
+      string shoutoutMessage = SqlManager.GetShoutoutMessage(user.userId);
       if (shoutoutMessage == null)
       {
-        return (streamerName, null);
+        return (user.displayName, null);
       }
 
-      return (streamerName, shoutoutMessage);
+      return (user.displayName, shoutoutMessage);
     }
   }
 }

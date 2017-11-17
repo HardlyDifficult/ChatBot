@@ -90,7 +90,7 @@ namespace HD
     }
 
     public static void OnMoney(
-      Message message,
+      TwitchUser message,
       int pennies)
     {
       return;

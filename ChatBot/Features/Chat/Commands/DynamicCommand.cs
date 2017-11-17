@@ -30,7 +30,7 @@ namespace HD
     public void OnMessage(
       Message message)
     {
-      if (message.userLevel < minimumUserLevel)
+      if (message.user.userLevel < minimumUserLevel)
       {
         return;
       }

@@ -99,7 +99,7 @@ namespace HD
 
       if (message.bits > 0)
       {
-        Edu.OnMoney(message, message.bits);
+        Edu.OnMoney(message.user, message.bits);
       }
 
       if (message.isWhisper
@@ -109,7 +109,7 @@ namespace HD
       }
 
       if (hasSomeoneSaidSomethingSinceGoingLive == false
-        && message.userId != TwitchController.instance.twitchChannelId)
+        && message.user != TwitchController.instance.twitchChannel)
       {
         hasSomeoneSaidSomethingSinceGoingLive = true;
         TwitchController.instance.SendMessage($"hardlyHype");
@@ -119,28 +119,25 @@ namespace HD
     }
 
     public static void OnSub(
-      string userId,
-      string displayName,
-      UserLevel userLevel,
+      TwitchUser user,
       int tier1To3,
       int months)
     {
-      Message m = new Message(userId, displayName, userLevel, null, false, 0);
-      string message = $"hardlyHype {displayName}";
+      string message = $"hardlyHype {user.displayName}";
 
       switch (tier1To3)
       {
         default:
         case 1:
-          Edu.OnMoney(m, 499);
+          Edu.OnMoney(user, 499);
           message += " just subscribed!";
           break;
         case 2:
-          Edu.OnMoney(m, 999);
+          Edu.OnMoney(user, 999);
           message += " double subbed!";
           break;
         case 3:
-          Edu.OnMoney(m, 2499);
+          Edu.OnMoney(user, 2499);
           message += " threw down a 6x sub!!!";
           break;
       }
@@ -156,9 +153,8 @@ namespace HD
     }
 
     public static void OnJoin(
-      string username)
+      TwitchUser user)
     {
-      TwitchUser user = new TwitchUser(username);
       onJoin?.Invoke(user);
     }
     #endregion
@@ -227,14 +223,14 @@ namespace HD
         }
         shouldWhisper = true;
       }
-      if (shouldWhisper && messageRespondingTo.userLevel >= UserLevel.Mods)
+      if (shouldWhisper && messageRespondingTo.user.userLevel >= UserLevel.Mods)
       {
         shouldWhisper = false;
       }
 
       if (shouldWhisper)
       {
-        SendWhisper(messageRespondingTo.displayName, message);
+        SendWhisper(messageRespondingTo.user.displayName, message);
 
         return false;
       }
@@ -379,7 +375,7 @@ namespace HD
       Thread.Sleep(1000);
       (string title, string game) = await TwitchController.instance.GetChannelInfo();
       string[] communityList = await TwitchController.instance.GetCommunity();
-      SendModReply(message.displayName, $"\"{title}\" {game} / {communityList.ToCsv()}");
+      SendModReply(message.user.displayName, $"\"{title}\" {game} / {communityList.ToCsv()}");
     }
 
     static void UpdateEdu(

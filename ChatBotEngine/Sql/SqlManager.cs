@@ -116,7 +116,7 @@ namespace HD
       string userId,
       int tier1To3)
     {
-      if (userId == TwitchController.instance.twitchChannelId)
+      if (userId == TwitchController.instance.twitchChannel.userId)
       {
         return;
       }

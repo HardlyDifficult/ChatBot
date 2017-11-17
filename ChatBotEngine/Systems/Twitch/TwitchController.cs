@@ -26,13 +26,13 @@ namespace HD
     // TODO DownloadFullSubList & SqlManager.DropAllSubs();
     // then for each: SqlManager.RecordSub(sub.User.Id, tier1To3);
 
-    public delegate void OnHosting(string channelWeAreHosting, int viewerCount);
+    public delegate void OnHosting(TwitchUser channelWeAreHosting, int viewerCount);
     public OnHosting onHosting; // TODO shoutout
 
-    public delegate void OnHosted(string channelHostingUs, bool isAutohost, int? viewerCount);
+    public delegate void OnHosted(TwitchUser channelHostingUs, bool isAutohost, int? viewerCount);
     public OnHosted onHosted; // TODO BotLogic.OnHost
 
-    public delegate void OnJoinChat(string usernameJoining);
+    public delegate void OnJoinChat(TwitchUser userJoining);
     public OnJoinChat onJoinChat; // TODO BotLogic.OnJoin
 
     public delegate void OnMessage(Message message);
@@ -41,7 +41,7 @@ namespace HD
     /// </summary>
     public OnMessage onMessage; // TODO botlogic.onmessage
 
-    public delegate void OnSub(string userId, string username, int tier, int months);
+    public delegate void OnSub(TwitchUser user, int tier, int months);
     public OnSub onSub; // TODO botlogi.onsub AND SqlManager.RecordSub
 
     /// <summary>
@@ -49,7 +49,7 @@ namespace HD
     /// </summary>
     readonly string jtvMessagePrefix = $":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG {BotSettings.twitch.channelUsername} :";
 
-    public string twitchChannelId
+    public TwitchUser twitchChannel
     {
       get; private set;
     }
@@ -66,7 +66,7 @@ namespace HD
       Reconnect();
 
       string channelName = BotSettings.twitch.channelUsername.ToLower();
-      twitchChannelId = twitchApi.Users.v5.GetUserByNameAsync(channelName).Result.Matches[0].Id;
+      twitchChannel = new TwitchUser(GetUserId(channelName), channelName, UserLevel.Owner);
     }
 
     public void Stop()
@@ -103,7 +103,7 @@ namespace HD
       object sender,
       OnHostingStartedArgs e)
     {
-      onHosting?.Invoke(e.TargetChannel, e.Viewers);
+      onHosting?.Invoke(TwitchUser.FromName(e.TargetChannel), e.Viewers);
     }
 
     /// <summary>
@@ -142,14 +142,14 @@ namespace HD
         count = viewerCount;
       }
 
-      onHosted?.Invoke(displayNameHostingMe, isAutoHost, count);
+      onHosted?.Invoke(TwitchUser.FromName(displayNameHostingMe), isAutoHost, count);
     }
 
     void OnUserJoined(
       object sender,
       OnUserJoinedArgs e)
     {
-      onJoinChat?.Invoke(e.Username);
+      onJoinChat?.Invoke(TwitchUser.FromName(e.Username));
     }
 
     void OnMessageReceived(
@@ -171,7 +171,8 @@ namespace HD
       OnReSubscriberArgs e)
     {
       int tier1To3 = e.ReSubscriber.SubscriptionPlan.GetTier();
-      onSub?.Invoke(e.ReSubscriber.UserId.ToString(), e.ReSubscriber.DisplayName, tier1To3, e.ReSubscriber.Months);
+      onSub?.Invoke(new TwitchUser(e.ReSubscriber.UserId.ToString(), e.ReSubscriber.DisplayName,
+        UserLevelHelpers.Get(e.ReSubscriber.UserId)), tier1To3, e.ReSubscriber.Months);
     }
 
     void OnNewSubscriber(
@@ -179,7 +180,8 @@ namespace HD
       OnNewSubscriberArgs e)
     {
       int tier1To3 = e.Subscriber.SubscriptionPlan.GetTier();
-      onSub?.Invoke(e.Subscriber.UserId.ToString(), e.Subscriber.DisplayName, tier1To3, 1);
+      onSub?.Invoke(new TwitchUser(e.Subscriber.UserId.ToString(), e.Subscriber.DisplayName,
+        UserLevelHelpers.Get(e.Subscriber.UserId)), tier1To3, 1);
     }
     #endregion
 
@@ -217,7 +219,7 @@ namespace HD
     public async void SetGame(
       string gameName)
     {
-      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannelId, game: gameName);
+      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, game: gameName);
     }
 
     /// <summary>
@@ -232,14 +234,14 @@ namespace HD
         Community community = await twitchApi.Communities.v5.GetCommunityByNameAsync(communityNameList[i]);
         communityIdList.Add(community.Id);
       }
-      await twitchApi.Channels.v5.SetChannelCommunitiesAsync(twitchChannelId, communityIdList, 
+      await twitchApi.Channels.v5.SetChannelCommunitiesAsync(twitchChannel.userId, communityIdList,
         authToken: BotSettings.twitch.channelOauth);
     }
 
     public async void SetTitle(
       string title)
     {
-      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannelId, title);
+      await twitchApi.Channels.v5.UpdateChannelAsync(twitchChannel.userId, title);
     }
 
     public async void UnFollow(
@@ -247,7 +249,7 @@ namespace HD
     {
       try
       {
-        await twitchApi.Users.v5.UnfollowChannelAsync(twitchChannelId, userId, 
+        await twitchApi.Users.v5.UnfollowChannelAsync(twitchChannel.userId, userId,
           authToken: BotSettings.twitch.channelOauth);
       }
       catch { }
@@ -255,11 +257,11 @@ namespace HD
     #endregion
 
     #region Read API
-    /// <param name="callbackForEachSub">UserId, DisplayName, Tier 1-3</param>
+    /// <param name="callbackForEachSub">User, Tier 1-3</param>
     public async void DownloadFullSubList(
-      Action<string, string, int> callbackForEachSub)
+      Action<TwitchUser, int> callbackForEachSub)
     {
-      List<Subscription> subList = await twitchApi.Channels.v5.GetAllSubscribersAsync(twitchChannelId).ConfigureAwait(true);
+      List<Subscription> subList = await twitchApi.Channels.v5.GetAllSubscribersAsync(twitchChannel.userId).ConfigureAwait(true);
 
       for (int i = 0; i < subList.Count; i++)
       {
@@ -267,19 +269,21 @@ namespace HD
         int tier1To3 = int.Parse(sub.SubPlan.Substring(0, 1));
         Debug.Assert(tier1To3 > 0 && tier1To3 < 4);
 
-        callbackForEachSub(sub.User.Id, sub.User.DisplayName, tier1To3);
+        callbackForEachSub(
+          new TwitchUser(sub.User.Id, sub.User.DisplayName, UserLevelHelpers.Get(sub.User.Id)),
+          tier1To3);
       }
     }
 
     public async Task<(string title, string game)> GetChannelInfo()
     {
-      Channel channel = await twitchApi.Channels.v5.GetChannelByIDAsync(twitchChannelId);
+      Channel channel = await twitchApi.Channels.v5.GetChannelByIDAsync(twitchChannel.userId);
       return (channel.Status, channel.Game);
     }
 
     public async Task<string[]> GetCommunity()
     {
-      CommunitiesResponse community = await twitchApi.Channels.v5.GetChannelCommuntiesAsync(twitchChannelId, BotSettings.twitch.channelOauth);
+      CommunitiesResponse community = await twitchApi.Channels.v5.GetChannelCommuntiesAsync(twitchChannel.userId, BotSettings.twitch.channelOauth);
 
       string[] nameList = new string[community.Communities.Length];
       for (int i = 0; i < community.Communities.Length; i++)
@@ -290,7 +294,36 @@ namespace HD
       return nameList;
     }
 
-    public string GetUserId(
+    public async void GetAllFollowers(
+      Action<string> forEach,
+      string resumeFromCursur = null)
+    {
+      List<ChannelFollow> followList = await twitchApi.Channels.v5.GetAllFollowersAsync(twitchChannel.userId);
+
+      for (int i = 0; i < followList.Count; i++)
+      {
+        ChannelFollow follow = followList[i];
+        forEach(follow.User.DisplayName);
+      }
+    }
+
+    public async Task<DateTime?> GetLastVideoTime(
+      string userId)
+    {
+      ChannelVideos videos = await twitchApi.Channels.v5.GetChannelVideosAsync(userId, 1);
+      if (videos == null)
+      {
+        return null;
+      }
+      if (videos.Videos.Length > 0)
+      {
+        return videos.Videos[0].CreatedAt;
+      }
+
+      return null;
+    }
+
+    internal string GetUserId(
       string username)
     {
       try
@@ -301,8 +334,10 @@ namespace HD
 
       return null;
     }
+    #endregion
 
-    public (string displayName, string id) GetUserInfo(
+    #region Private Read
+    (string displayName, string id) GetUserInfo(
      string username)
     {
       try
@@ -318,20 +353,7 @@ namespace HD
       return (null, null);
     }
 
-    public async void GetAllFollowers(
-      Action<string> forEach,
-      string resumeFromCursur = null)
-    {
-      List<ChannelFollow> followList = await twitchApi.Channels.v5.GetAllFollowersAsync(twitchChannelId);
-
-      for (int i = 0; i < followList.Count; i++)
-      {
-        ChannelFollow follow = followList[i];
-        forEach(follow.User.DisplayName);
-      }
-    }
-
-    public string GetDisplayName(
+    string GetDisplayName(
       string userId)
     {
       try
@@ -343,22 +365,6 @@ namespace HD
         }
       }
       catch { }
-
-      return null;
-    }
-
-    public async Task<DateTime?> GetLastVideoTime(
-      string userId)
-    {
-      ChannelVideos videos = await twitchApi.Channels.v5.GetChannelVideosAsync(userId, 1);
-      if (videos == null)
-      {
-        return null;
-      }
-      if (videos.Videos.Length > 0)
-      {
-        return videos.Videos[0].CreatedAt;
-      }
 
       return null;
     }

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using TwitchLib;
 using TwitchLib.Events.Client;
-using TwitchLib.Models.Client;
-using TwitchLib.Services;
 
 namespace HD
 {
-  public class TwitchConnection
+  internal class TwitchConnection
   {
     #region Data
     readonly TwitchClient client;
@@ -228,9 +225,12 @@ namespace HD
     {
       throttleMessage = new Throttle(TimeSpan.FromSeconds(.5));
       throttleWhisper = new Throttle(TimeSpan.FromSeconds(.5));
+
       client = new TwitchClient(
         new TwitchLib.Models.Client.ConnectionCredentials(connectAsUsername, connectAsOauth),
         BotSettings.twitch.channelUsername);
+
+      // Not using this throttle because it drops messages
       //client.ChatThrottler = new TwitchLib.Services.MessageThrottler(20 / 2, TimeSpan.FromSeconds(30), true);
       //client.WhisperThrottler = new TwitchLib.Services.MessageThrottler(20 / 2, TimeSpan.FromSeconds(30), true);
       client.AutoReListenOnException = true;
@@ -242,6 +242,14 @@ namespace HD
       client?.Disconnect();
     }
     #endregion
+
+    #region Write
+    public void SendMessage(
+      string message)
+    {
+      throttleMessage.SleepIfNeeded();
+      client.SendMessage(message);
+    }
 
     public void SendWhisper(
       string username,
@@ -268,11 +276,6 @@ namespace HD
         SendWhisper(username, remainingMessage);
       }
     }
-
-    public void SendMessage(string message)
-    {
-      throttleMessage.SleepIfNeeded();
-      client.SendMessage(message);
-    }
+    #endregion
   }
 }
