@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using System.Text;
 
@@ -218,7 +219,7 @@ Delete alias(es): !alias delete !aliasName
 
         if (CommandAliasesTable.instance.DeleteAlias(aliasToDelete))
         {
-          BotLogic.instance.SendModReply(message.user.displayName, 
+          BotLogic.instance.SendModReply(message.user.displayName,
             $"Deleted alias {aliasesToDelete[i]} (for {command.command})");
         }
       }
@@ -390,14 +391,25 @@ Delete alias(es): !alias delete !aliasName
 
       builder.Append("\r\n");
 
+      List<string> dynamicCommandsToInclude = new List<string>();
       for (int i = 0; i < dynamicCommandList.Count; i++)
       {
         DynamicCommand command = dynamicCommandList[i];
         if (userLevel >= command.minimumUserLevel)
         {
-          builder.Append(command.command);
-          builder.Append(", ");
+          dynamicCommandsToInclude.Add(command.command);
         }
+      }
+
+      // We could do better...
+      dynamicCommandsToInclude = dynamicCommandsToInclude.Distinct().ToList();
+      dynamicCommandsToInclude.Sort();
+
+      for (int i = 0; i < dynamicCommandsToInclude.Count; i++)
+      {
+        string command = dynamicCommandsToInclude[i];
+        builder.Append(command);
+        builder.Append(", ");
       }
 
       builder.Remove(builder.Length - 2, 2); // Remove last comma

@@ -25,6 +25,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -54,6 +55,7 @@
     <Compile Include="Features\Chat\Subs\SubFeatures.cs" />
     <Compile Include="Features\Chat\Time\Data\HistoryState.cs" />
     <Compile Include="Features\Chat\IBotFeature.cs" />
+    <Compile Include="Features\Chat\Time\EtaInTitleFeature.cs" />
     <Compile Include="Features\Overlay\KeyboardHook.cs" />
     <Compile Include="Features\Overlay\KeystrokeCounter.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">

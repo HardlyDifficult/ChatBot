@@ -45,7 +45,7 @@ The ETA (and optional message) is auto posted anytime someone new enters the cha
 
 ```!help !live``` 
 
-Issues an unhost and posts a message to chat.
+Starts streaming in OBS if the app is open. Issues an unhost and posts a message to chat.
 
 If you include a note when going live it is posted to Twitter (with a link to the channel), as a reply to a previous conversion.
 

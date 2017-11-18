@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Timers;
 
 namespace HD
 {
@@ -23,6 +24,8 @@ namespace HD
     public event Action<string> onGoOffline;
 
     bool includeGoodbye = true;
+
+    Timer obsStartTimer;
     #endregion
 
     #region Properties
@@ -73,7 +76,7 @@ namespace HD
     {
       get
       {
-        if(KeyStringValueTable.instance.TryGetValue(etaKey, out string value) == false)
+        if (KeyStringValueTable.instance.TryGetValue(etaKey, out string value) == false)
         {
           return null;
         }
@@ -91,16 +94,20 @@ namespace HD
     TimeFeatures()
     {
       Debug.Assert(instance == null || instance == this);
+
+      obsStartTimer = new Timer(3000);
+      obsStartTimer.AutoReset = false;
+      obsStartTimer.Elapsed += (a, b) => Obs.StartStreaming();
     }
 
     void IBotFeature.Init()
     {
       CommandFeatures.instance.Add(new DynamicCommand(
-        command: "!eta", 
+        command: "!eta",
         helpMessage: @"
 !eta timeSpan [= Message]
 timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
-          ",  
+          ",
         minimumUserLevel: UserLevel.Mods,
         onCommand: OnSetEta));
 
@@ -111,8 +118,8 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
         onCommand: OnSetLive));
 
       CommandFeatures.instance.Add(new DynamicCommand(
-        command: "!eta", 
-        helpMessage: null, 
+        command: "!eta",
+        helpMessage: null,
         minimumUserLevel: UserLevel.Everyone,
         onCommand: OnShowEta));
 
@@ -145,11 +152,11 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
 
       // TODO TwitchController.instance.DownloadFullSubList();
       TwitchController.instance.ExitHost();
-      TwitchController.instance.SendMessage("Welcome back!");
+      TwitchController.instance.SendMessage("Welcome back!" + (StreamHistoryTable.instance.isLive ? "" : " Stream is starting up now."));
 
       onGoLive?.Invoke(goLiveMessage);
     }
-    
+
     void OnGoOffline(
       string etaMessage)
     {
@@ -165,7 +172,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       Message message)
     {
       ShowUptime(
-        message, 
+        message,
         canSwitchCommandIfOffline: true);
     }
 
@@ -173,8 +180,8 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
      Message message)
     {
       ShowEta(
-        message, 
-        canSwitchCommandIfOffline: true); 
+        message,
+        canSwitchCommandIfOffline: true);
     }
 
     void OnSetEta(
@@ -199,6 +206,11 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       }
 
       OnGoLive(goLiveMessage);
+
+      if (message.user.userLevel == UserLevel.Owner)
+      {
+        obsStartTimer.Start();
+      }
     }
     #endregion
 
@@ -210,7 +222,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       TimeSpan? uptime = StreamHistoryTable.instance.GetUptime();
       if (uptime == null)
       { // Offline
-        if(canSwitchCommandIfOffline)
+        if (canSwitchCommandIfOffline)
         {
           ShowEta(message, canSwitchCommandIfOffline: false);
         }
@@ -237,7 +249,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       }
     }
     #endregion
-    
+
     #region Private Write
     void ShowEta(
       Message message,
@@ -264,18 +276,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
           includeGoodbye = false;
         }
 
-        TimeSpan timeTillNextStream = this.timeTillNextStream.Value;
-        if (timeTillNextStream > TimeSpan.Zero)
-        {
-          stringBuilder.Append("Live in ");
-          stringBuilder.Append(timeTillNextStream.ToShortTimeString());
-        }
-        else
-        {
-          stringBuilder.Append("Online sooon! Nick was supposed to be here ");
-          stringBuilder.Append((-timeTillNextStream).ToShortTimeString());
-          stringBuilder.Append(" ago..");
-        }
+        stringBuilder.Append(GetETAString());
 
         if (etaMessage != null)
         {
@@ -287,6 +288,26 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       }
     }
 
+    public string GetETAString()
+    {
+      StringBuilder stringBuilder = new StringBuilder();
+
+      TimeSpan timeTillNextStream = this.timeTillNextStream.Value;
+      if (timeTillNextStream > TimeSpan.Zero)
+      {
+        stringBuilder.Append("Live in ");
+        stringBuilder.Append(timeTillNextStream.ToShortTimeString());
+      }
+      else
+      {
+        stringBuilder.Append("Online sooon! Nick was supposed to be here ");
+        stringBuilder.Append((-timeTillNextStream).ToShortTimeString());
+        stringBuilder.Append(" ago..");
+      }
+
+      return stringBuilder.ToString();
+    }
+
     void SetEta(
       Message message,
       DateTime nextStreamTime,
@@ -294,7 +315,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     {
       bool wasOffline = StreamHistoryTable.instance.isLive == false;
 
-      if(wasOffline == false)
+      if (wasOffline == false)
       {
         CommandFeatures.instance.ExecuteCommandFromAdmin("!uptime");
         CommandFeatures.instance.ExecuteCommandFromAdmin("#sellout");

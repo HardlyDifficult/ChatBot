@@ -113,7 +113,10 @@ Change game: !setgame gamedev|coding|game name
 
       string obsMessage = new string(' ', 30);
       obsMessage += title;
-      File.WriteAllText("..\\TODO.txt", obsMessage);
+      lock (this)
+      {
+        File.WriteAllText("..\\TODO.txt", obsMessage);
+      }
     }
 
     static void SendChannelInfo(string title, string game, string[] communityList)
