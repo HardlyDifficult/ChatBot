@@ -47,6 +47,18 @@ namespace HD
 
       return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id));
     }
+
+    public static TwitchUser FromId(
+      string userId)
+    {
+      User user = TwitchController.instance.GetUserById(userId).Result;
+      if(user == null)
+      {
+        return null;
+      }
+
+      return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id));
+    }
     #endregion
 
     #region Operations

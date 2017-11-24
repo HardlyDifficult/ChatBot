@@ -24,9 +24,24 @@ namespace HD
 
     [JsonProperty(PropertyName = nameof(twitter))]
     readonly TwitterSettings _twitter = new TwitterSettings();
+
+    [JsonProperty(PropertyName = nameof(gdax))]
+    readonly GdaxSettings _gdax = new GdaxSettings();
     #endregion
 
     #region Properties
+    public static GdaxSettings gdax
+    {
+      get
+      {
+        if(instance == null)
+        {
+          Load();
+        }
+        return instance._gdax;
+      }
+    }
+
     public static TwitchSettings twitch
     {
       get

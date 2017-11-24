@@ -392,6 +392,17 @@ namespace HD
 
       return null;
     }
+
+    internal async Task<User> GetUserById(
+      string userId)
+    {
+      try
+      {
+        return (await twitchApi.Users.v5.GetUserByIDAsync(userId));
+      } catch { }
+
+      return null;
+    }
     #endregion
 
     #region Private Read
