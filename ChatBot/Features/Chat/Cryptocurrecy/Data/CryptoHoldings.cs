@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using GDax;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace HD

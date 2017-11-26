@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GDax;
+using System;
 using System.Diagnostics;
 
 namespace HD
@@ -118,8 +119,14 @@ FROM {tableName}
 WHERE {userIdField}=@{userIdField}
         ";
 
-      return (decimal)(float)SqlManager.GetScalar(sql,
+      object result = SqlManager.GetScalar(sql,
         ($"@{userIdField}", userId));
+      if(result == null || result is DBNull)
+      {
+        return 0;
+      }
+
+      return (decimal)(float)result;
     }
     #endregion
   }

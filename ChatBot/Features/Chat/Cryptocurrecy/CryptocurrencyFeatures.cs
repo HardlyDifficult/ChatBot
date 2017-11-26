@@ -1,4 +1,7 @@
-﻿using System;
+﻿using GDax;
+using GDax.Models.Request;
+using GDax.Models.Response;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +14,12 @@ namespace HD
   /// </summary>
   public class CryptocurrencyFeatures : IBotFeature
   {
+    readonly GDaxAPI gdax = new GDaxAPI(
+      true,
+      BotSettings.gdax.key,
+      BotSettings.gdax.secret,
+      BotSettings.gdax.passphrase);
+
     void IBotFeature.Init()
     {
       CommandFeatures.instance.Add(new DynamicCommand(
@@ -70,7 +79,7 @@ namespace HD
         builder.Append(" ");
         builder.Append(currency);
         builder.Append(" (");
-        decimal currencyMarketPrice = Gdax.instance.GetMarketPrice(currency);
+        decimal currencyMarketPrice = gdax.GetMarketPrice(currency);
         decimal holdingsValue = currencyMarketPrice * totalAmountOfCoin;
         builder.Append(holdingsValue);
         builder.Append(")");
@@ -96,7 +105,7 @@ namespace HD
         builder.Append(myHoldings.currency);
         builder.Append(" (");
 
-        decimal currencyMarketPrice = Gdax.instance.GetMarketPrice(myHoldings.currency);
+        decimal currencyMarketPrice = gdax.GetMarketPrice(myHoldings.currency);
         decimal holdingsValue = currencyMarketPrice * myHoldings.amountOfCoin;
         builder.Append(holdingsValue);
         builder.Append(") ");
@@ -138,7 +147,7 @@ namespace HD
         CryptoCurrency currency = (CryptoCurrency)i;
         builder.Append(currency);
         builder.Append(" ");
-        builder.Append(Gdax.instance.GetMarketPrice(currency));
+        builder.Append(gdax.GetMarketPrice(currency));
       }
 
       const string quoteKey = "!quote";
@@ -151,7 +160,7 @@ namespace HD
       Message message)
     {
       string currencyString = message.message.GetBetween(" ", " ");
-      if (Enum.TryParse(currencyString, out CryptoCurrency currency) == false)
+      if (Enum.TryParse(currencyString, true, out CryptoCurrency currency) == false)
       {
         // TODO fail message, bad currency
         return;
@@ -166,21 +175,27 @@ namespace HD
       // TODO add a bonus table of sorts (like on sub)
       decimal winningsHistory = CryptoWinningsTable.instance.GetTotalWinningsInUsd(message.user.userId);
       decimal buyPrice = .1m + winningsHistory;
-      if(buyPrice <= .001m)
+      if (buyPrice <= .001m)
       {
         // TODO fail you're broke
         return;
       }
 
-      CryptoHoldings holdings = Gdax.instance.Buy(
-        currency, 
-        buyAmountInUsd: buyPrice, 
-        buyingUserId: message.user.userId);
-      if (holdings == null)
+      PlaceOrderResponse response = gdax.PlaceOrder(BuyRequest.CreateBuyOrder(
+        currency,
+        fundsInUsd: buyPrice));
+      if (response == null)
       {
         // TODO something failed;
         return;
       }
+
+      CryptoHoldings holdings = new CryptoHoldings(
+        response.orderId,
+        currency,
+        response.amountOfCoin.Value,
+        response.amountInUsd.Value,
+        message.user.userId);
 
       CryptoHoldingsTable.instance.AddHolding(
         message.user.userId,
@@ -198,7 +213,7 @@ namespace HD
       Message message)
     {
       string currencyString = message.message.GetBetween(" ", " ");
-      if (Enum.TryParse(currencyString, out CryptoCurrency currency) == false)
+      if (Enum.TryParse(currencyString, true, out CryptoCurrency currency) == false)
       {
         // TODO fail message, bad currency
         return;
@@ -211,7 +226,7 @@ namespace HD
         return;
       }
 
-      decimal marketPrice = Gdax.instance.GetMarketPrice(currency);
+      decimal marketPrice = gdax.GetMarketPrice(currency);
       decimal expectedSaleInUsd = marketPrice * myHoldings.amountOfCoin;
       if (expectedSaleInUsd <= myHoldings.amountInUsd)
       {
@@ -219,26 +234,58 @@ namespace HD
         return;
       }
 
-      (string sellOrderId, decimal sellPriceInUsd) = Gdax.instance.Sell(currency, myHoldings.amountOfCoin);
+      // TODO sell;
+      return;
+      //(string sellOrderId, decimal sellPriceInUsd) = Gdax.instance.Sell(currency, myHoldings.amountOfCoin);
 
-      CryptoHoldingsTable.instance.RemoveHolding(myHoldings.buyOrderId);
+      //CryptoHoldingsTable.instance.RemoveHolding(myHoldings.buyOrderId);
 
-      CryptoWinningsTable.instance.AddWinnings(
-        buyerUserId: myHoldings.buyingUserId,
-        currency: currency,
-        numberOfCoins: myHoldings.amountOfCoin,
-        buyPriceInUsd: myHoldings.amountInUsd,
-        sellPriceInUsd: sellPriceInUsd,
-        buyOrderId: myHoldings.buyOrderId,
-        sellOrderId: sellOrderId);
+      //CryptoWinningsTable.instance.AddWinnings(
+      //  buyerUserId: myHoldings.buyingUserId,
+      //  currency: currency,
+      //  numberOfCoins: myHoldings.amountOfCoin,
+      //  buyPriceInUsd: myHoldings.amountInUsd,
+      //  sellPriceInUsd: sellPriceInUsd,
+      //  buyOrderId: myHoldings.buyOrderId,
+      //  sellOrderId: sellOrderId);
 
-      decimal returnAmount = sellPriceInUsd - myHoldings.amountInUsd;
-      decimal returnPercent = returnAmount / myHoldings.amountInUsd;
+      //decimal returnAmount = sellPriceInUsd - myHoldings.amountInUsd;
+      //decimal returnPercent = returnAmount / myHoldings.amountInUsd;
 
-      // TODO message if buyer and seller are the same
-      BotLogic.instance.SendMessageOrWhisper(message,
-        $"Sold {myHoldings.amountOfCoin} {currency} for {sellPriceInUsd}. That's a {returnPercent} return ({returnAmount}) from {message.user.displayName}",
-        true);
+      //// TODO message if buyer and seller are the same
+      //BotLogic.instance.SendMessageOrWhisper(message,
+      //  $"Sold {myHoldings.amountOfCoin} {currency} for {sellPriceInUsd}. That's a {returnPercent} return ({returnAmount}) from {message.user.displayName}",
+      //  true);
+    }
+
+    public CryptoHoldings Buy(
+      CryptoCurrency currency,
+      decimal buyAmountInUsd,
+      string buyingUserId)
+    {
+      BuyRequest request = BuyRequest.CreateBuyOrder(currency, buyAmountInUsd);
+      PlaceOrderResponse response = gdax.PlaceOrder(request);
+
+      if (response.settled == false)
+      {
+        BotLogic.instance.SendModReply(null, $"Settle failed: ");
+        // TODO
+        return null;
+      }
+
+      return new CryptoHoldings(
+        response.orderId, 
+        currency,
+        amountOfCoin: response.amountOfCoin.Value,
+        amountInUsd: response.amountInUsd.Value,
+        buyingUserId: buyingUserId);
+    }
+
+    public (string orderId, decimal amount) Sell(
+      CryptoCurrency currency,
+      decimal numberOfCoins)
+    {
+      return ("aoenut", 1);
     }
   }
 }
