@@ -106,7 +106,7 @@ namespace HD
     internal static bool IsMod(
       string userId)
     {
-      return SqlManager.GetUserLevel(userId) >= UserLevel.Mods;
+      return SqlHelper.GetUserLevel(userId) >= UserLevel.Mods;
     }
   }
 

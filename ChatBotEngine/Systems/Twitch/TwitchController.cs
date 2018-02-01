@@ -70,12 +70,12 @@ namespace HD
     #endregion
 
     #region Init
-    public void Start()
+    public async Task Start()
     {
       Reconnect();
 
       string channelName = BotSettings.twitch.channelUsername.ToLower();
-      User channelUser = GetUser(channelName);
+      User channelUser = await GetUser(channelName);
       twitchChannel = new TwitchUser(channelUser.Id, channelUser.DisplayName, UserLevel.Owner);
     }
 
@@ -109,17 +109,17 @@ namespace HD
     #endregion
 
     #region Events
-    void OnHostingStarted(
+    async void OnHostingStarted(
       object sender,
       OnHostingStartedArgs e)
     {
-      onHosting?.Invoke(TwitchUser.FromName(e.TargetChannel), e.Viewers);
+      onHosting?.Invoke(await TwitchUser.FromName(e.TargetChannel), e.Viewers);
     }
 
     /// <summary>
     /// TwitchLib's host event does not detect auto host - so this does that manually.
     /// </summary>
-    void OnSendReceiveData(
+    async void OnSendReceiveData(
       object sender,
       OnSendReceiveDataArgs e)
     {
@@ -152,14 +152,14 @@ namespace HD
         count = viewerCount;
       }
 
-      onHosted?.Invoke(TwitchUser.FromName(displayNameHostingMe), isAutoHost, count);
+      onHosted?.Invoke(await TwitchUser.FromName(displayNameHostingMe), isAutoHost, count);
     }
 
-    void OnUserJoined(
+    async void OnUserJoined(
       object sender,
       OnUserJoinedArgs e)
     {
-      onJoinChat?.Invoke(TwitchUser.FromName(e.Username));
+      onJoinChat?.Invoke(await TwitchUser.FromName(e.Username));
     }
 
     void OnMessageReceived(
@@ -381,12 +381,12 @@ namespace HD
       return null;
     }
 
-    internal User GetUser(
+    internal async Task<User> GetUser(
       string username)
     {
       try
       {
-        return twitchApi.Users.v5.GetUserByNameAsync(username).Result.Matches[0];
+        return (await twitchApi.Users.v5.GetUserByNameAsync(username)).Matches[0];
       }
       catch { }
 

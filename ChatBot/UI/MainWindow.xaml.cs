@@ -18,13 +18,14 @@ namespace HD
       new KeyPressMonitor();
     }
 
-    void Window_Loaded(
+    async void Window_Loaded(
       object sender,
       RoutedEventArgs e)
     {
       CheckBotSettings();
-      BotLogic.instance.Start();
+      await BotLogic.instance.Start();
       TwitchController.instance.onChannelInfoChange += OnTitleChange;
+      TitleText.Text = (await TwitchController.instance.GetChannelInfo()).title;
     }
     #endregion
 
@@ -130,7 +131,6 @@ namespace HD
       object sender,
       RoutedEventArgs e)
     {
-      TitleText.Text = (await TwitchController.instance.GetChannelInfo()).title;
     }
 
     void Title_LostFocus(

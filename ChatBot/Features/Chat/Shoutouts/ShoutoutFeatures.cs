@@ -97,7 +97,7 @@ Create shoutout: !shoutout @Username = New shoutout message
     #endregion
 
     #region Commands
-    void OnCommandShoutout(
+    async void OnCommandShoutout(
       Message message)
     {
       string usernameToShout = message.message.GetAfter(" ");
@@ -129,11 +129,11 @@ Create shoutout: !shoutout @Username = New shoutout message
 
       if (newShoutoutMessage != null)
       {
-        TwitchUser userToShoutout = TwitchUser.FromName(usernameToShout);
+        TwitchUser userToShoutout = await TwitchUser.FromName(usernameToShout);
         SqlManager.SetShoutoutMessage(userToShoutout.userId, newShoutoutMessage);
       }
       {
-        (string streamerName, string shoutoutMessage) = GetShoutoutMessage(TwitchUser.FromName(usernameToShout));
+        (string streamerName, string shoutoutMessage) = GetShoutoutMessage(await TwitchUser.FromName(usernameToShout));
         if (streamerName == null)
         { // I don't know who you are
           TwitchController.instance.SendWhisper(message.user.displayName, $"Fail! Who's {usernameToShout}??");

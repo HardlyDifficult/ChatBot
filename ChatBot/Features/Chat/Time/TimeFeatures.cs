@@ -24,8 +24,6 @@ namespace HD
     public event Action<string> onGoOffline;
 
     bool includeGoodbye = true;
-
-    Timer obsStartTimer;
     #endregion
 
     #region Properties
@@ -91,15 +89,6 @@ namespace HD
     #endregion
 
     #region Init
-    TimeFeatures()
-    {
-      Debug.Assert(instance == null || instance == this);
-
-      obsStartTimer = new Timer(3000);
-      obsStartTimer.AutoReset = false;
-      obsStartTimer.Elapsed += (a, b) => Obs.StartStreaming();
-    }
-
     void IBotFeature.Init()
     {
       CommandFeatures.instance.Add(new DynamicCommand(
@@ -206,11 +195,6 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       }
 
       OnGoLive(goLiveMessage);
-
-      if (message.user.userLevel == UserLevel.Owner)
-      {
-        obsStartTimer.Start();
-      }
     }
     #endregion
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace HD
 {
@@ -27,9 +28,9 @@ namespace HD
       TwitchController.instance.onMessageFirstPass += OnMessageFirstPass;
     }
 
-    public void Start()
+    public async Task Start()
     {
-      TwitchController.instance.Start();
+      await TwitchController.instance.Start();
     }
 
     public void Stop()

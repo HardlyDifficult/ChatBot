@@ -12,6 +12,7 @@ namespace HD
 
     void IBotFeature.Init()
     {
+      timer.AutoReset = false;
       //TimeFeatures.instance.onGoLive += Instance_onGoLive;
       //TimeFeatures.instance.onGoOffline += Instance_onGoOffline;
 

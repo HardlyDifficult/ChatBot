@@ -110,13 +110,13 @@ namespace HD
 
       void CheckNormalKeys()
       {
-        //bool specialDown = false;
+        bool specialDown = false;
         List<KeystrokeInfo> specialKeysDown = new List<KeystrokeInfo>();
         foreach (KeystrokeInfo key in specialKeysPressed)
         {
           if (key.isDown)
           {
-            //specialDown = true;
+            specialDown = true;
             specialKeysDown.Add(key);
           }
         }
@@ -131,7 +131,7 @@ namespace HD
 
         CheckKeys(standaloneKeysToCheck, keysPressed, specialKeysDown);
 
-        //if (specialDown)
+        if (specialDown)
         {
           CheckKeys(keysToCheck, keysPressed, specialKeysDown);
         }

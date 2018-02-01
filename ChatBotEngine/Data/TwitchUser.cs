@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using TwitchLib.Models.Client;
 using TwitchLib.Models.API.v5.Users;
+using System.Threading.Tasks;
 
 namespace HD
 {
@@ -36,10 +37,10 @@ namespace HD
       WhisperMessage whisperMessage)
       : this(whisperMessage.UserId, whisperMessage.DisplayName, UserLevelHelpers.Get(whisperMessage)) { }
 
-    public static TwitchUser FromName(
+    public static async Task<TwitchUser> FromName(
       string username)
     {
-      User user = TwitchController.instance.GetUser(username);
+      User user = await TwitchController.instance.GetUser(username);
       if(user == null)
       {
         return null;
