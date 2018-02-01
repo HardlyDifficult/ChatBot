@@ -62,6 +62,7 @@
     <Compile Include="Features\Chat\IBotFeature.cs" />
     <Compile Include="Features\Chat\Time\EtaInTitleFeature.cs" />
     <Compile Include="Features\Chat\Broken\Cryptocurrecy\CryptocurrencyFeatures.cs" />
+    <Compile Include="Features\Overlay\AFK\AFKFeatures.cs" />
     <Compile Include="Features\Overlay\KeyboardHook.cs" />
     <Compile Include="Features\Overlay\KeystrokeCounter.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">

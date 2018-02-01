@@ -176,7 +176,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     void OnSetEta(
      Message message)
     {
-      (DateTime? nextStreamTime, string etaMessage) = ExtractUpdateCommand(message);
+      (DateTime? nextStreamTime, string etaMessage) = ExtractETAAndMessage(message);
       if (nextStreamTime == null)
       { // Not a valid Set ETA request
         return;
@@ -233,6 +233,25 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
       }
     }
     #endregion
+
+    public static (DateTime? nextStreamTime, string message) ExtractETAAndMessage(
+      Message message)
+    {
+      string etaString = message.message.GetAfter(" ")?.Trim();
+      if (string.IsNullOrEmpty(etaString))
+      {
+        return (null, null);
+      }
+
+      string etaMessage = etaString.GetAfter("=");
+      if (etaMessage != null)
+      {
+        etaString = etaString.GetBefore("=");
+      }
+
+      DateTime? nextStreamTime = CalcTime(etaString);
+      return (nextStreamTime, etaMessage);
+    }
 
     #region Private Write
     void ShowEta(
@@ -320,26 +339,7 @@ timeSpan may be various formats including '5 mins', '5 am', or '5 am wed'
     #endregion
 
     #region Private Read
-    (DateTime? nextStreamTime, string message) ExtractUpdateCommand(
-      Message message)
-    {
-      string etaString = message.message.GetAfter(" ")?.Trim();
-      if (string.IsNullOrEmpty(etaString))
-      {
-        return (null, null);
-      }
-
-      string etaMessage = etaString.GetAfter("=");
-      if (etaMessage != null)
-      {
-        etaString = etaString.GetBefore("=");
-      }
-
-      DateTime? nextStreamTime = CalcTime(etaString);
-      return (nextStreamTime, etaMessage);
-    }
-
-    DateTime? CalcTime(
+    static DateTime? CalcTime(
       string etaString)
     {
       { // x = mins

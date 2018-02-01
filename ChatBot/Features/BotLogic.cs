@@ -15,8 +15,10 @@ namespace HD
     #endregion
 
     #region Init
-    BotLogic()
+    public async Task Start()
     {
+      await TwitchController.instance.Start();
+
       SchemaTable.UpdateTables();
 
       List<IBotFeature> featureList = ReflectionHelpers.CreateOneOfEach<IBotFeature>();
@@ -26,11 +28,6 @@ namespace HD
       }
 
       TwitchController.instance.onMessageFirstPass += OnMessageFirstPass;
-    }
-
-    public async Task Start()
-    {
-      await TwitchController.instance.Start();
     }
 
     public void Stop()

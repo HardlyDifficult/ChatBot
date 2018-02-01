@@ -35,22 +35,20 @@ namespace HD
     #endregion
 
     #region Events
-    void OnGoLive(
+    async void OnGoLive(
       string goLiveMessage)
     {
       const string key = "Twitter";
 
-      if (goLiveMessage != null && goLiveMessage.Length > 3)
+      if (goLiveMessage == null || goLiveMessage.Length < 3)
       {
-        if (CooldownTable.instance.IsReady(key))
-        {
-          SendTweetAndPulse(goLiveMessage, isForLiveThread: true);
-          CooldownTable.instance.SetTime(key);
-        }
+        goLiveMessage = (await TwitchController.instance.GetChannelInfo()).title;
       }
-      else
+
+      if (CooldownTable.instance.IsReady(key))
       {
-        TwitchController.instance.SendWhisper(BotSettings.twitch.channelUsername, "Dude, where's the tweet?");
+        SendTweetAndPulse(goLiveMessage, isForLiveThread: true);
+        CooldownTable.instance.SetTime(key);
       }
     }
     #endregion

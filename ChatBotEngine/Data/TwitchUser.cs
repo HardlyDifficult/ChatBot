@@ -46,7 +46,7 @@ namespace HD
         return null;
       }
 
-      return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id));
+      return new TwitchUser(user.Id, user.DisplayName, await UserLevelHelpers.Get(user.Id));
     }
 
     public static TwitchUser FromId(
@@ -58,7 +58,7 @@ namespace HD
         return null;
       }
 
-      return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id));
+      return new TwitchUser(user.Id, user.DisplayName, UserLevelHelpers.Get(user.Id).Result);
     }
     #endregion
 

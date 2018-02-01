@@ -23,10 +23,7 @@ namespace HD
   {
     #region Data
     public static readonly TwitchController instance = new TwitchController();
-
-    // TODO DownloadFullSubList & SqlManager.DropAllSubs();
-    // then for each: SqlManager.RecordSub(sub.User.Id, tier1To3);
-
+    
     public delegate void OnHosting(TwitchUser channelWeAreHosting, int viewerCount);
     public event OnHosting onHosting;
 
@@ -48,7 +45,7 @@ namespace HD
     public event OnMessage onMessage;
 
     public delegate void OnSub(TwitchUser user, int tier, int months);
-    public event OnSub onSub; //  SqlManager.RecordSub
+    public event OnSub onSub; 
 
     public delegate void ChannelInfoChange(string title, string game);
     public event ChannelInfoChange onChannelInfoChange;
@@ -183,22 +180,22 @@ namespace HD
       OnMessageOrWhisper(new Message(e.WhisperMessage));
     }
 
-    void OnReSubscriber(
+    async void OnReSubscriber(
       object sender,
       OnReSubscriberArgs e)
     {
       int tier1To3 = e.ReSubscriber.SubscriptionPlan.GetTier();
       onSub?.Invoke(new TwitchUser(e.ReSubscriber.UserId.ToString(), e.ReSubscriber.DisplayName,
-        UserLevelHelpers.Get(e.ReSubscriber.UserId)), tier1To3, e.ReSubscriber.Months);
+        await UserLevelHelpers.Get(e.ReSubscriber.UserId)), tier1To3, e.ReSubscriber.Months);
     }
 
-    void OnNewSubscriber(
+    async void OnNewSubscriber(
       object sender,
       OnNewSubscriberArgs e)
     {
       int tier1To3 = e.Subscriber.SubscriptionPlan.GetTier();
       onSub?.Invoke(new TwitchUser(e.Subscriber.UserId.ToString(), e.Subscriber.DisplayName,
-        UserLevelHelpers.Get(e.Subscriber.UserId)), tier1To3, 1);
+        await UserLevelHelpers.Get(e.Subscriber.UserId)), tier1To3, 1);
     }
     #endregion
 
@@ -316,7 +313,7 @@ namespace HD
 
     #region Read API
     /// <param name="callbackForEachSub">User, Tier 1-3</param>
-    public async void DownloadFullSubList(
+    public async Task DownloadFullSubList(
       Action<TwitchUser, int> callbackForEachSub)
     {
       List<Subscription> subList = await twitchApi.Channels.v5.GetAllSubscribersAsync(twitchChannel.userId).ConfigureAwait(true);
@@ -328,7 +325,7 @@ namespace HD
         Debug.Assert(tier1To3 > 0 && tier1To3 < 4);
 
         callbackForEachSub(
-          new TwitchUser(sub.User.Id, sub.User.DisplayName, UserLevelHelpers.Get(sub.User.Id)),
+          new TwitchUser(sub.User.Id, sub.User.DisplayName, await UserLevelHelpers.Get(sub.User.Id)),
           tier1To3);
       }
     }

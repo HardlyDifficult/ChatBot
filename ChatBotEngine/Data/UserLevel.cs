@@ -46,10 +46,10 @@ namespace HD
     public static UserLevel Get(
       WhisperMessage whisperMessage)
     {
-      return Get(whisperMessage.UserId);
+      return Get(whisperMessage.UserId).Result;
     }
 
-    public static UserLevel Get(
+    public async static Task<UserLevel> Get(
       string userId)
     {
       if (userId == TwitchController.instance.twitchChannel.userId)
@@ -60,11 +60,11 @@ namespace HD
       {
         return UserLevel.Mods;
       }
-      else if (IsSubscribed(userId))
+      else if (await IsSubscribed(userId))
       {
         return UserLevel.Subscribers;
       }
-      else if (IsFollowing(userId).Result)
+      else if (await IsFollowing(userId))
       {
         return UserLevel.Follower;
       }
@@ -89,13 +89,13 @@ namespace HD
       }
     }
 
-    internal static bool IsSubscribed(
+    internal async static Task<bool> IsSubscribed(
        string userId)
     {
       try
       {
-        return TwitchController.instance.twitchApi.Users.v5.CheckUserSubscriptionByChannelAsync(userId.ToString(),
-          TwitchController.instance.twitchChannel.ToString()).Result != null;
+        return (await TwitchController.instance.twitchApi.Users.v5.CheckUserSubscriptionByChannelAsync(userId.ToString(),
+          TwitchController.instance.twitchChannel.ToString())) != null;
       }
       catch
       {
@@ -112,7 +112,7 @@ namespace HD
 
   public static class UserLevelExtensions
   {
-    public static bool Includes(
+    public static async Task<bool> Includes(
       this UserLevel userLevel,
       string userId)
     {
@@ -121,21 +121,21 @@ namespace HD
         case UserLevel.Everyone:
           return true;
         case UserLevel.Follower:
-          if (UserLevel.Subscribers.Includes(userId))
+          if (await UserLevel.Subscribers.Includes(userId))
           {
             return true;
           }
 
           return UserLevelHelpers.IsFollowing(userId).Result;
         case UserLevel.Subscribers:
-          if (UserLevel.Mods.Includes(userId))
+          if (await UserLevel.Mods.Includes(userId))
           {
             return true;
           }
 
-          return UserLevelHelpers.IsSubscribed(userId);
+          return await UserLevelHelpers.IsSubscribed(userId);
         case UserLevel.Mods:
-          if (UserLevel.Owner.Includes(userId))
+          if (await UserLevel.Owner.Includes(userId))
           {
             return true;
           }
